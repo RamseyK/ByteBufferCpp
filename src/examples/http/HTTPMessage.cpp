@@ -1,0 +1,219 @@
+#include "HTTPMessage.h"
+
+HTTPMessage::HTTPMessage() : ByteBuffer(4096) {
+    this->init();
+}
+
+HTTPMessage::HTTPMessage(string sData) : ByteBuffer(sData.size()+1) {
+    putBytes((byte*)sData.c_str(), sData.size()+1);
+    this->init();
+}
+
+HTTPMessage::HTTPMessage(byte* pData, unsigned int len) : ByteBuffer(pData, len) {
+    this->init();
+}
+
+HTTPMessage::~HTTPMessage() {
+    headers->clear();
+    delete headers;
+}
+
+void HTTPMessage::init() {
+    parseError = false;
+	parseErrorStr = "";
+    
+    headers = new map<string, string>();
+}
+
+/**
+ * Put Line
+ * Append a line (string) to the backing ByteBuffer at the current position
+ *
+ * @param str String to put into the byte buffer
+ * @param crlf_end If true (default), end the line with a \r\n
+ */
+void HTTPMessage::putLine(string str, bool crlf_end) {
+    // Terminate with crlf if flag set
+    if(crlf_end)
+        str += "\r\n";
+    
+    // Put the entire contents of str into the buffer
+    putBytes((byte*)str.c_str(), str.size());
+}
+
+/**
+ * Get Line
+ * Retrive the entire contents of a line: string from current position until CR or LF, whichever comes first, then increment the read position
+ * until it's past the last CR or LF in the line
+ *
+ * @return Contents of the line in a string (without CR or LF)
+ */
+string HTTPMessage::getLine() {
+	string ret = "";
+	int startPos = getReadPos();
+	bool newLineReached = false;
+	char c = 0;
+
+	// Append characters to the return string until we hit the end of the buffer, a CR (13) or LF (10)
+	for(unsigned int i = startPos; i < size(); i++) {
+		// If the next byte is a \r or \n, we've reached the end of the line and should break out of the loop
+		c = peek();
+		if((c == 13) || (c == 10)) {
+			newLineReached = true;
+			break;
+		}
+
+		// Otherwise, append the next character to the string
+		ret += getChar();
+	}
+
+	// If a line termination was never reached, discard the result and conclude there are no more lines to parse
+	if(!newLineReached) {
+		setReadPos(startPos); // Reset the position to before the last line read that we are now discarding
+		ret = "";
+		return ret;
+	}
+
+	// Increment the read position until the end of a CR or LF chain, so the read position will then point to the next line
+	for(unsigned int i = getReadPos(); i < size(); i++) {
+		c = getChar();
+		if((c != 13) && (c != 10)) {
+			// Set the Read position back one because the retrived character wasn't a LF or CR
+			setReadPos(getReadPos()-1);
+			break;
+		}
+	}
+
+	return ret;
+}
+
+/**
+ * getStrElement
+ * Get a token from the current buffer, stopping at the delimiter. Returns the token as a string
+ *
+ * @param delim The delimiter to stop at when retriving the element. By default, it's a space
+ * @return Token found in the buffer. Empty if delimiter wasn't reached
+ */
+string HTTPMessage::getStrElement(char delim) {
+    string ret = "";
+    int startPos = getReadPos();
+    unsigned int size = 0;
+    int endPos = find(delim, startPos);
+
+	// Calculate the size based on the found ending position
+    size = (endPos+1) - startPos;
+
+    if((endPos == -1) || (size <= 0))
+        return "";
+    
+    // Grab the string from the byte buffer up to the delimiter
+    char *str = new char[size];
+    getBytes((byte*)str, size);
+	str[size-1] = 0x00; // NULL termination
+    ret.assign(str);
+    
+    // Increment the read position PAST the delimiter
+    setReadPos(endPos+1);
+    
+    return ret;
+}
+
+/**
+ * Add Header to the Map from string
+ * Takes a formatted header string "Header: value", parse it, and put it into the map as a key,value pair.
+ *
+ * @param string containing formatted header: value
+ */
+void HTTPMessage::addHeader(string line) {
+	string key = "", value = "";
+	size_t kpos;
+	int i = 0;
+	kpos = line.find(':');
+	if(kpos == string::npos) {
+		printf("Could not addHeader: %s\n", line.c_str());
+		return;
+	}
+	key = line.substr(0, kpos);
+	value = line.substr(kpos+1, line.size()-kpos-1);
+	
+	// Skip all leading spaces in the value
+	while(value.at(i) == 0x20) {
+		i++;
+	}
+	value = value.substr(i, value.size());
+	
+	// Add header to the map
+	addHeader(key, value);
+}
+
+void HTTPMessage::addHeader(string key, string value) {
+    headers->insert(pair<string, string>(key, value));
+}
+
+/**
+ * Put Headers
+ * Write all headers currently in the 'headers' map to the ByteBuffer.
+ * 'Header: value'
+ */
+void HTTPMessage::putHeaders() {
+    map<string,string>::const_iterator it;
+    for(it = headers->begin(); it != headers->end(); it++) {
+		string final = it->first + ": " + it->second;
+		putLine(final, true);
+	}
+}
+
+/**
+ * Get Header Value
+ * Given a header name (key), return the value associated with it in the headers map
+ *
+ * @param key Key to identify the header
+ */
+string HTTPMessage::getHeaderValue(string key) {
+    // Lookup in map
+    map<string, string>::const_iterator it;
+    it = headers->find(key);
+    
+    // Key wasn't found, return a blank value
+    if (it == headers->end())
+        return "";
+    
+    // Otherwise, return the value
+    return it->second;
+}
+
+/**
+ * Get Header String
+ * Get the full formatted header string "Header: value" from the headers map at position index
+ * 
+ * @ret Formatted string with header name and value
+ */
+string HTTPMessage::getHeaderStr(int index) {
+	int i = 0;
+	string ret = "";
+    map<string,string>::const_iterator it;
+    for(it = headers->begin(); it != headers->end(); it++) {
+		if(i == index) {
+			ret = it->first + ": " + it->second;
+			break;
+		}
+
+		i++;
+	}
+	return ret;
+}
+
+/**
+ * Get Number of Headers
+ * Return the number of headers in the headers map
+ *
+ * @return size of the map
+ */
+int HTTPMessage::getNumHeaders() {
+	return headers->size();
+}
+
+void HTTPMessage::clearHeaders() {
+    headers->clear();
+}
+
