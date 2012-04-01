@@ -19,6 +19,9 @@
 #ifndef _BYTEBUFFER_H
 #define _BYTEBUFFER_H
 
+// Default number of bytes to allocate in the backing buffer if no size is provided
+#define DEFAULT_SIZE 4096
+
 // If defined, utility functions within the class are enabled
 #define BB_UTILITY
 
@@ -76,7 +79,7 @@ private:
 	}
 
 public:
-	ByteBuffer(unsigned int size = 4096);
+	ByteBuffer(unsigned int size = DEFAULT_SIZE);
 	ByteBuffer(byte* arr, unsigned int size);
 	~ByteBuffer();
 

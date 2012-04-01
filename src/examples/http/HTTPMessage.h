@@ -21,6 +21,7 @@
 
 #include <map>
 #include <string>
+#include <sstream>
 
 #include "../../ByteBuffer.h"
 
@@ -29,6 +30,7 @@
 #define SERVER_HEAD "httpserver/1.0 ramsey"
 
 // HTTP Methods (Requests)
+const static unsigned int NUM_METHODS = 9;
 
 enum Method {
 	HEAD = 0,
@@ -42,7 +44,7 @@ enum Method {
 	PATH = 8
 };
 
-const static char* const requestMethodStr[] = {
+const static char* const requestMethodStr[NUM_METHODS] = {
 	"HEAD", // 0
 	"GET", // 1
 	"POST", // 2
@@ -53,6 +55,7 @@ const static char* const requestMethodStr[] = {
 	"CONNECT", // 7
 	"PATH" // 8
 };
+
 
 // HTTP Response Status codes
 enum Status {
@@ -77,9 +80,17 @@ private:
     map<string, string> *headers;
 
 protected:
-    // Flag to determine if there was an error parsing the request
-    bool parseError;
 	string parseErrorStr;
+	
+	string version;
+	
+	// Message Body Data (Resource in the case of a response, extra parameters in the case of a request)
+	byte* data;
+	unsigned int dataLen;
+	
+	// Caching variables
+	bool createCached;
+	byte* createRetData;
 
 protected:
     virtual void init();
@@ -91,7 +102,7 @@ public:
     virtual ~HTTPMessage();
     
     virtual byte* create(bool freshCreate=false) {return NULL;};
-    virtual void parse() {};
+    virtual bool parse() {return false;};
     
     void putLine(string str, bool crlf_end=true);
     
@@ -107,13 +118,30 @@ public:
     void clearHeaders();
     
     // Getters & Setters
-    
-    bool hasParseError() {
-        return parseError;
-    }
 
 	string getParseError() {
 		return parseErrorStr;
+	}
+	
+    void setVersion(string v) {
+        version = v;
+    }
+    
+    string getVersion() {
+        return version;
+    }
+    
+	void setData(byte* d, unsigned int len) {
+		data = d;
+		dataLen = len;
+	}
+
+	byte* getData() {
+		return data;
+	}
+
+	unsigned int getDataLength() {
+		return dataLen;
 	}
 };
 

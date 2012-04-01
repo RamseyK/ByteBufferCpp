@@ -14,13 +14,25 @@ HTTPMessage::HTTPMessage(byte* pData, unsigned int len) : ByteBuffer(pData, len)
 }
 
 HTTPMessage::~HTTPMessage() {
+	if(createRetData != NULL) {
+		delete createRetData;
+		createRetData = NULL;
+	}
+
     headers->clear();
     delete headers;
 }
 
 void HTTPMessage::init() {
-    parseError = false;
 	parseErrorStr = "";
+	
+	data = NULL;
+	dataLen = 0;
+	
+	version = HTTP_VERSION; // By default, all create() will indicate the version is whatever HTTP_VERSION is
+	
+	createRetData = NULL;
+	createCached = false;
     
     headers = new map<string, string>();
 }
@@ -146,6 +158,12 @@ void HTTPMessage::addHeader(string line) {
 	addHeader(key, value);
 }
 
+/**
+ * Add header key-value pair to the map
+ * 
+ * @param key String representation of the Header Key
+ * @param value String representation of the Header value
+ */
 void HTTPMessage::addHeader(string key, string value) {
     headers->insert(pair<string, string>(key, value));
 }
@@ -213,6 +231,10 @@ int HTTPMessage::getNumHeaders() {
 	return headers->size();
 }
 
+/**
+ * Clear Headers
+ * Removes all headers from the internal map
+ */
 void HTTPMessage::clearHeaders() {
     headers->clear();
 }

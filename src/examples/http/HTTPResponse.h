@@ -27,6 +27,7 @@ class HTTPResponse : public HTTPMessage {
 private:    
     // Response variables
     int status;
+    string reason;
 
 protected:
 	virtual void init();
@@ -38,13 +39,18 @@ public:
     virtual ~HTTPResponse();
     
     virtual byte* create(bool freshCreate=false);
-    virtual void parse();
+    virtual bool parse();
     
     // Accessors & Mutators
     
     string getStatusStr();
     void setStatus (int scode) {
         status = scode;
+    }
+    
+    // Return's parsed reason string
+    string getReason() {
+    	return reason;
     }
 };
 

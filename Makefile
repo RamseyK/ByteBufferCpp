@@ -1,12 +1,11 @@
-# Makefile for ByteBuffer
+# Makefile for ByteBuffer and accompanying test programs
+# (C) Ramsey Kant 2011-2012
 
 CC = g++
-DEBUG = -g -fpermissive
-WARN = -Wall
 # Debug Flags
-DBGFLAGS = $(DEBUG) $(WARN)
+DEBUGFLAGS = -g -O0 -fpermissive -Wall
 # Production Flags
-PRODFLAGS = $(WARN)
+PRODFLAGS = -Wall -O3
 
 TEST_H   = src/ByteBuffer.h
 TEST_SRC = src/ByteBuffer.cpp src/test.cpp
@@ -26,8 +25,10 @@ packets: $(PACKETS_SRC) $(PACKETS_H)
 http: $(HTTP_SRC) $(HTTP_H)
 	$(CC) $(DBGFLAGS) -o bin/$@ $(HTTP_SRC)
 
+.PHONY: clean
 clean:
-	rm -f *.o bin/*.exe *~ \#*
-
-macClean: clean
+	rm -f bin/test
+	rm -f bin/packets
+	rm -f bin/http
 	rm -Rf *.dSYM
+

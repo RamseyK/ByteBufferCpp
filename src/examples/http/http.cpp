@@ -25,11 +25,14 @@
 using namespace std;
 
 int main() {
+	bool testFailed = false;
 	HTTPMessage *msg = new HTTPMessage("line1\r\nline2\nline3");
     HTTPRequest *req = new HTTPRequest("POST /sample/path.html HTTP/1.1\r\nHeader1: value1\r\nHeader2: value2\r\nHeader3: value3\r\nContent-Length: 5\r\n\r\ndata");
 	HTTPRequest *req2 = new HTTPRequest();
 	HTTPRequest *req3 = NULL;
     //HTTPResponse *resp = new HTTPResponse();
+    
+    printf("HTTP Test Cases:\n");
 
 	// Test getLine() in HTTPMessage
 
@@ -42,17 +45,22 @@ int main() {
     printf("%s (%u)\n%s (%u)\n%s (%u)\n%s (%u)\n\n", l1.c_str(), (unsigned int)l1.size(), l2.c_str(), (unsigned int)l2.size(), l3.c_str(), (unsigned int)l3.size(), l4.c_str(), (unsigned int)l4.size());
 
 	// Test HTTPRequest parse()
-	req->parse();
-	if(req->hasParseError()) {
+	if(!req->parse()) {
 		printf("HTTPRequest had a parse error: %s\n", req->getParseError().c_str());
+		testFailed = true;
+	} else {
+		printf("HTTPRequest: %i %s\n", req->getMethod(), req->getVersion().c_str());
+		byte *data = req->getData();
+		printf("Data (%i):\n", req->getDataLength());
+		for(unsigned int i = 0; i < req->getDataLength(); i++) {
+			printf("0x%02x ", data[i]);
+		}
+		printf("\n");
+		for(unsigned int i = 0;i < req->getDataLength(); i++) {
+			printf("%c", data[i]);
+		}
+		printf("\n");
 	}
-	printf("HTTPRequest: %i %s\n", req->getMethod(), req->getVersion().c_str());
-	byte *data = req->getData();
-	printf("Data (%i):\n", req->getDataLength());
-	for(unsigned int i = 0; i < req->getDataLength(); i++) {
-		printf("0x%02x ", data[i]);
-	}
-	printf("\n");
 
 	// Populate vars in an HTTPRequest to test create()
 	string req2Content = "var=2";
@@ -70,15 +78,14 @@ int main() {
 	req2->setData((byte*)req2Content.c_str(), req2Content.size());
 	req2Ret = req2->create();
 	req2Size = req2->size();
-
 	printf("\n\n");
 	
 	// Have req3 take the entire data from req2 and parse it
 	printf("Parsing req2 with req3:\n");
 	req3 = new HTTPRequest(req2Ret, req2Size);
-	req3->parse();
-	if(req3->hasParseError()) {
+	if(!req3->parse()) {
 		printf("req3 parse error: %s\n", req3->getParseError().c_str());
+		testFailed = true;
 	} else {
 		string req3Header = req3->methodIntToStr(req3->getMethod()) + " " + req3->getRequestUri() + " " + req3->getVersion();
 		printf("%s\n", req3Header.c_str());
@@ -91,6 +98,10 @@ int main() {
 		for(unsigned int i = 0; i < req3->getDataLength(); i++) {
 			printf("0x%02x ", req3Data[i]);
 		}
+		printf("\n");
+		for(unsigned int i = 0;i < req3->getDataLength(); i++) {
+			printf("%c", req3Data[i]);
+		}
 		printf("\n\n");
 	}
     
@@ -99,5 +110,12 @@ int main() {
 	delete req2;
 	delete req3;
     //delete resp;
+    
+    if(testFailed) {
+    	printf("TEST FAILED: Read through output carefully to find point of failure\n");
+    } else {
+    	printf("TEST PASSED\n");
+    }
+    
     return 0;
 }

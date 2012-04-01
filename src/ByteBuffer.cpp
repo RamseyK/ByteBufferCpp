@@ -22,7 +22,7 @@
  * ByteBuffer constructor
  * Reserves specified size in internal vector
  * 
- * @param size Size of space to preallocate internally. Default is 4096 bytes
+ * @param size Size (in bytes) of space to preallocate internally. Default is set in DEFAULT_SIZE
  */
 ByteBuffer::ByteBuffer(unsigned int size) {
 	buf.reserve(size);
@@ -40,9 +40,16 @@ ByteBuffer::ByteBuffer(unsigned int size) {
  * @param size Size of space to allocate
  */
 ByteBuffer::ByteBuffer(byte* arr, unsigned int size) {
-	buf.reserve(size);
-	clear();
-	putBytes(arr, size);
+	// If the provided array is NULL, allocate a blank buffer of the provided size
+	if(arr == NULL) {
+		buf.reserve(size);
+		clear();
+	} else { // Consume the provided array
+		buf.reserve(size);
+		clear();
+		putBytes(arr, size);
+	}
+	
 #ifdef BB_UTILITY
 	name = "";
 #endif

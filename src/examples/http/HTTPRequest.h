@@ -25,12 +25,6 @@ class HTTPRequest : public HTTPMessage {
 private:
     int method;
     string requestUri;
-    string version;
-	byte* createRetData;
-	byte* data;
-	unsigned int dataLen;
-
-	bool createCached;
     
 protected:
     virtual void init();
@@ -42,7 +36,7 @@ public:
     virtual ~HTTPRequest();
     
     virtual byte *create(bool freshCreate=false);
-    virtual void parse();
+    virtual bool parse();
 
 	// Helper functions
 
@@ -66,27 +60,6 @@ public:
     string getRequestUri() {
         return requestUri;
     }
-    
-    void setVersion(string v) {
-        version = v;
-    }
-    
-    string getVersion() {
-        return version;
-    }
-
-	void setData(byte* d, unsigned int len) {
-		data = d;
-		dataLen = len;
-	}
-
-	byte* getData() {
-		return data;
-	}
-
-	unsigned int getDataLength() {
-		return dataLen;
-	}
 };
 
 #endif

@@ -32,20 +32,11 @@ HTTPRequest::HTTPRequest(byte* pData, unsigned int len) : HTTPMessage(pData, len
 }
 
 HTTPRequest::~HTTPRequest() {
-	if(createRetData != NULL) {
-		delete createRetData;
-		createRetData = NULL;
-	}
 }
 
 void HTTPRequest::init() {
     method = 0;
     requestUri = "";
-    version = "";
-	data = NULL;
-	dataLen = 0;
-	createRetData = NULL;
-	createCached = false;
 }
 
 /**
@@ -62,7 +53,7 @@ int HTTPRequest::methodStrToInt(string name) {
     
     // Loop through requestMethodStr array and attempt to match the 'name' with a known method in the array
 	int ret = -1;
-	for(int i = 0; i < 9; i++) {
+	for(unsigned int i = 0; i < NUM_METHODS; i++) {
 		if(strcmp(requestMethodStr[i], name.c_str()) == 0) {
 			ret = i;
 			break;
@@ -78,7 +69,7 @@ int HTTPRequest::methodStrToInt(string name) {
  */
 string HTTPRequest::methodIntToStr(unsigned int mid) {
     // ID is out of bounds of the possible requestMethodStr indexes
-    if(mid >= 9)
+    if(mid >= NUM_METHODS)
         return "";
     
     // Return the string matching the id
@@ -89,7 +80,7 @@ string HTTPRequest::methodIntToStr(unsigned int mid) {
  * Create
  * Create and return a byte array of an HTTP request, built from the variables of this HTTPRequest
  *
- * @
+ * @param freshCreate If true, force a rebuild of the packet even if there's a previously cached version
  * @return Byte array of this HTTPRequest to be sent over the wire
  */
 byte* HTTPRequest::create(bool freshCreate) {
@@ -112,12 +103,12 @@ byte* HTTPRequest::create(bool freshCreate) {
         printf("Could not create HTTPRequest, unknown method id: %i\n", method);
         return NULL;
     }
-    putLine(mstr + " " + requestUri + " " + HTTP_VERSION);
+    putLine(mstr + " " + requestUri + " " + version);
     
     // Put all headers
     putHeaders();
     
-    // If theres data, add it now
+    // If theres body data, add it now
     if((data != NULL) && dataLen > 0) {
         putBytes(data, dataLen);
     }
@@ -136,8 +127,10 @@ byte* HTTPRequest::create(bool freshCreate) {
 /**
  * Parse
  * Populate internal HTTPRequest variables by parsing the HTTP data
+ *
+ * @param True if successful. If false, sets parseErrorStr for reason of failure
  */
-void HTTPRequest::parse() {
+bool HTTPRequest::parse() {
 	string initial = "", methodName = "", hline = "", app = "";
 
 	// Get elements from the initial line: <method> <path> <version>\r\n
@@ -148,16 +141,14 @@ void HTTPRequest::parse() {
 	// Convert the name to the internal enumeration number
 	method = methodStrToInt(methodName);
 	if(method == -1) {
-		parseError = true;
 		parseErrorStr = "Invalid Method: " + methodName;
-		return;
+		return false;
 	}
 
-	// Validate the HTTP version. If there is a mismatch, there's no point in continuing
+	// Validate the HTTP version. If there is a mismatch, discontinue parsing
 	if(strcmp(version.c_str(), HTTP_VERSION) != 0) {
-		parseError = true;
 		parseErrorStr = "Supported HTTP version does not match";
-		return;
+		return false;
 	}
 
 	// Get the first header
@@ -178,15 +169,16 @@ void HTTPRequest::parse() {
 
 	// Only POST and PUT can have Content (data after headers)
 	if((method != POST) && (method != PUT))
-		return;
+		return true;
 
 	// Content-Length should exist. If it does, pull the data starting from here until the end of the buffer
 	// The reason we don't use the Content-Length header's value is because I don't want to assume where the byte count starts from
 	string hlen = "";
 	hlen = getHeaderValue("Content-Length");
-	printf("hlen: %s\n", hlen.c_str());
-	if(hlen.empty())
-		return;
+	if(hlen.empty()) {
+		parseErrorStr = "Something went wrong with retriving the Content-Length";
+		return false;
+	}
 
 	// Create a big enough buffer to store the data
 	unsigned int dIdx = 0, s = size();
@@ -198,4 +190,6 @@ void HTTPRequest::parse() {
 		data[dIdx] = get(i);
 		dIdx++;
 	}
+	
+	return true;
 }
