@@ -27,10 +27,9 @@
 
 // Constants
 #define HTTP_VERSION "HTTP/1.1"
-#define SERVER_HEAD "httpserver/1.0 ramsey"
+#define NUM_METHODS 9
 
 // HTTP Methods (Requests)
-const static unsigned int NUM_METHODS = 9;
 
 enum Method {
 	HEAD = 0,
@@ -68,6 +67,7 @@ enum Status {
     // 3xx Redirection
     
     // 4xx Client Error
+    BAD_REQUEST = 400,
     NOT_FOUND = 404,
     
     // 5xx Server Error
@@ -104,14 +104,19 @@ public:
     virtual byte* create(bool freshCreate=false) {return NULL;};
     virtual bool parse() {return false;};
     
-    void putLine(string str, bool crlf_end=true);
+    // Create helpers
+    void putLine(string str = "", bool crlf_end=true);
+    void putHeaders();
     
+    // Parse helpers
 	string getLine();
     string getStrElement(char delim = 0x20); // 0x20 = "space"
+    void parseHeaders();
+    bool parseBody();
     
+    // Header Map manipulation
 	void addHeader(string line);
     void addHeader(string key, string value);
-    void putHeaders();
     string getHeaderValue(string key);
 	string getHeaderStr(int index);
 	int getNumHeaders();

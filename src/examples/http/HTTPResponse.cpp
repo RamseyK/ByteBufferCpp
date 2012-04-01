@@ -56,6 +56,9 @@ string HTTPResponse::getStatusStr() {
         case Status(OK):
             ret << "OK";
             break;
+        case Status(BAD_REQUEST):
+        	ret << "Bad Request";
+        	break;
         case Status(NOT_FOUND):
             ret << "Not Found";
             break;
@@ -137,35 +140,14 @@ bool HTTPResponse::parse() {
 		return false;
 	}
 	
+	// Parse and populate the headers map using the parseHeaders helper
+	parseHeaders();
+	
+	// If the body of the message
+	if(!parseBody())
+		return false;
+	
 	return true;
 }
 
-/*
-string HTTPResponse::generateResponse() {
-    stringstream resp;
-    
-    // Add common headers
-    addHeader("Server", SERVER_HEAD);
-    
-    // Date Header.  Ex: Date: Fri, 31 Dec 1999 23:59:59 GMT
-    char date[80];
-    time_t tm;
-    struct tm *gmt;
-    time(&tm);
-    gmt = gmtime(&tm);
-    strftime(date, 80, "%a, %d %b %Y %H:%M:%S GMT", gmt);
-    addHeader("Date", date);
-    
-    // Status Line: HTTP-Version SP Status-Code SP Reason-Phrase CRLF
-    resp << HTTP_VERSION << " " << status << " " << getStatusStr() << "\r\n";
-    
-    // Loop through headers and dump each line by line
-    
-    // Message Body
-    
-    // End with a new line
-    resp << "\n";
-    
-    return resp.str();
-}*/
 

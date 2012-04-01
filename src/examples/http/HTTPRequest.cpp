@@ -131,7 +131,7 @@ byte* HTTPRequest::create(bool freshCreate) {
  * @param True if successful. If false, sets parseErrorStr for reason of failure
  */
 bool HTTPRequest::parse() {
-	string initial = "", methodName = "", hline = "", app = "";
+	string initial = "", methodName = "";
 
 	// Get elements from the initial line: <method> <path> <version>\r\n
 	methodName = getStrElement();
@@ -151,45 +151,17 @@ bool HTTPRequest::parse() {
 		return false;
 	}
 
-	// Get the first header
-	hline = getLine();
-
-	// Keep pulling headers until a blank line has been reached (signaling the end of headers)
-	while(hline.size() > 0) {
-		// Case where values are on multiple lines ending with a comma
-		app = hline;
-		while(app[app.size()-1] == ',') {
-			app = getLine();
-			hline += app;
-		}
-		
-		addHeader(hline);
-		hline = getLine();
-	}
+	// Parse and populate the headers map using the parseHeaders helper
+	parseHeaders();
 
 	// Only POST and PUT can have Content (data after headers)
 	if((method != POST) && (method != PUT))
 		return true;
-
-	// Content-Length should exist. If it does, pull the data starting from here until the end of the buffer
-	// The reason we don't use the Content-Length header's value is because I don't want to assume where the byte count starts from
-	string hlen = "";
-	hlen = getHeaderValue("Content-Length");
-	if(hlen.empty()) {
-		parseErrorStr = "Something went wrong with retriving the Content-Length";
-		return false;
-	}
-
-	// Create a big enough buffer to store the data
-	unsigned int dIdx = 0, s = size();
-	dataLen = bytesRemaining();
-	data = new byte[dataLen];
 	
-	// Grab all the bytes from the current position to the end
-	for(unsigned int i = getReadPos(); i < s; i++) {
-		data[dIdx] = get(i);
-		dIdx++;
-	}
+	// Parse the body of the message
+	if(!parseBody())
+		return false;
 	
 	return true;
 }
+

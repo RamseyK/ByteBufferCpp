@@ -30,26 +30,42 @@ int main() {
     HTTPRequest *req = new HTTPRequest("POST /sample/path.html HTTP/1.1\r\nHeader1: value1\r\nHeader2: value2\r\nHeader3: value3\r\nContent-Length: 5\r\n\r\ndata");
 	HTTPRequest *req2 = new HTTPRequest();
 	HTTPRequest *req3 = NULL;
-    //HTTPResponse *resp = new HTTPResponse();
+    HTTPResponse *res = new HTTPResponse("HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\nContent-Length: 111\r\n\r\n<html><body>\n<h2>No Host: header received</h2>\nHTTP 1.1 requests must include the Host: header.\n</body></html>");
     
     printf("HTTP Test Cases:\n");
 
 	// Test getLine() in HTTPMessage
 
 	string l1 = "", l2 = "", l3 = "", l4 = "";
-	l1 = msg->getLine(); // Expected: test1
-	l2 = msg->getLine(); // Expected: test2
+	l1 = msg->getLine(); // Expected: line1
+	if(strcmp(l1.c_str(), "line1") != 0) {
+		printf("l1 mismatch. Got: %s. Expected: line1\n", l1.c_str());
+		testFailed = true;
+	}
+	l2 = msg->getLine(); // Expected: line2
+	if(strcmp(l2.c_str(), "line2") != 0) {
+		printf("l2 mismatch. Got: %s. Expected: line2\n", l2.c_str());
+		testFailed = true;
+	}
 	l3 = msg->getLine(); // Expected: 
+	if(!l3.empty()) {
+		printf("l3 mismatch. Got: %s. Expected to be blank\n", l3.c_str());
+		testFailed = true;
+	}
 	l4 = msg->getLine(); // Expected: 
+	if(!l4.empty()) {
+		printf("l4 mismatch. Got: %s. Expected to be blank\n", l4.c_str());
+		testFailed = true;
+	}
 
     printf("%s (%u)\n%s (%u)\n%s (%u)\n%s (%u)\n\n", l1.c_str(), (unsigned int)l1.size(), l2.c_str(), (unsigned int)l2.size(), l3.c_str(), (unsigned int)l3.size(), l4.c_str(), (unsigned int)l4.size());
 
 	// Test HTTPRequest parse()
 	if(!req->parse()) {
-		printf("HTTPRequest had a parse error: %s\n", req->getParseError().c_str());
+		printf("HTTPRequest (req) had a parse error: %s\n", req->getParseError().c_str());
 		testFailed = true;
 	} else {
-		printf("HTTPRequest: %i %s\n", req->getMethod(), req->getVersion().c_str());
+		printf("HTTPRequest(req): %i %s\n", req->getMethod(), req->getVersion().c_str());
 		byte *data = req->getData();
 		printf("Data (%i):\n", req->getDataLength());
 		for(unsigned int i = 0; i < req->getDataLength(); i++) {
@@ -88,7 +104,7 @@ int main() {
 		testFailed = true;
 	} else {
 		string req3Header = req3->methodIntToStr(req3->getMethod()) + " " + req3->getRequestUri() + " " + req3->getVersion();
-		printf("%s\n", req3Header.c_str());
+		printf("HTTPResponse(res3): %s\n", req3Header.c_str());
 		printf("req3 headers (%i):\n", req3->getNumHeaders());
 		for(int i = 0; i < req3->getNumHeaders(); i++) {
 			printf("%s\n", req3->getHeaderStr(i).c_str());
@@ -104,17 +120,40 @@ int main() {
 		}
 		printf("\n\n");
 	}
+	
+	// Test HTTPResponse(res) parse()
+	
+	if(!res->parse()) {
+		printf("res parse error: %s\n", res->getParseError().c_str());
+		testFailed = true;
+	} else {
+		printf("HTTPResponse(res): %s %s\n", res->getVersion().c_str(), res->getStatusStr().c_str());
+		printf("res headers (%i):\n", res->getNumHeaders());
+		for(int i = 0; i < res->getNumHeaders(); i++) {
+			printf("%s\n", res->getHeaderStr(i).c_str());
+		}
+		printf("res data(%i):\n", res->getDataLength());
+		byte* resData = res->getData();
+		for(unsigned int i = 0; i < res->getDataLength(); i++) {
+			printf("0x%02x ", resData[i]);
+		}
+		printf("\n");
+		for(unsigned int i = 0;i < res->getDataLength(); i++) {
+			printf("%c", resData[i]);
+		}
+		printf("\n\n");
+	}
     
 	delete msg;
     delete req;
 	delete req2;
 	delete req3;
-    //delete resp;
+    delete res;
     
     if(testFailed) {
-    	printf("TEST FAILED: Read through output carefully to find point of failure\n");
+    	printf("TEST PROGRAM FAILED: Read through output carefully to find point of failure\n");
     } else {
-    	printf("TEST PASSED\n");
+    	printf("TEST PROGRAM PASSED\n");
     }
     
     return 0;

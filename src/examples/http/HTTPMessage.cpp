@@ -54,6 +54,22 @@ void HTTPMessage::putLine(string str, bool crlf_end) {
 }
 
 /**
+ * Put Headers
+ * Write all headers currently in the 'headers' map to the ByteBuffer.
+ * 'Header: value'
+ */
+void HTTPMessage::putHeaders() {
+    map<string,string>::const_iterator it;
+    for(it = headers->begin(); it != headers->end(); it++) {
+		string final = it->first + ": " + it->second;
+		putLine(final, true);
+	}
+	
+	// End with a blank line
+	putLine();
+}
+
+/**
  * Get Line
  * Retrive the entire contents of a line: string from current position until CR or LF, whichever comes first, then increment the read position
  * until it's past the last CR or LF in the line
@@ -87,7 +103,11 @@ string HTTPMessage::getLine() {
 	}
 
 	// Increment the read position until the end of a CR or LF chain, so the read position will then point to the next line
+	// Also, only read a maximum of 2 characters so as to not skip a blank line that is only \r\n
+	unsigned int k = 0;
 	for(unsigned int i = getReadPos(); i < size(); i++) {
+		if(k++ >= 2)
+			break;
 		c = getChar();
 		if((c != 13) && (c != 10)) {
 			// Set the Read position back one because the retrived character wasn't a LF or CR
@@ -131,6 +151,82 @@ string HTTPMessage::getStrElement(char delim) {
 }
 
 /**
+ * Parse Headers
+ * When an HTTP message (request & response) has reached the point where headers are present, this method
+ * should be called to parse and populate the internal map of headers.
+ * Parse headers will move the read position past the blank line that signals the end of the headers
+ */
+void HTTPMessage::parseHeaders() {
+	string hline = "", app = "";
+	
+	// Get the first header
+	hline = getLine();
+
+	// Keep pulling headers until a blank line has been reached (signaling the end of headers)
+	while(hline.size() > 0) {
+		// Case where values are on multiple lines ending with a comma
+		app = hline;
+		while(app[app.size()-1] == ',') {
+			app = getLine();
+			hline += app;
+		}
+		
+		addHeader(hline);
+		hline = getLine();
+	}
+}
+
+/**
+ * Parse Body
+ * Parses everything after the headers section of an HTTP message. Handles chuncked responses/requests
+ *
+ * @return True if successful. False on error, parseErrorStr is set with a reason
+ */
+bool HTTPMessage::parseBody() {
+	// Content-Length should exist (size of the Body data) if there is body data
+	string hlenstr = "";
+	int contentLen = 0;
+	hlenstr = getHeaderValue("Content-Length");
+	
+	// No body data to read:
+	if(hlenstr.empty())
+		return true;
+
+	contentLen = atoi(hlenstr.c_str());
+	
+	// contentLen should NOT exceed the remaining number of bytes in the buffer
+	// Add 1 to bytesRemaining so it includes the byte at the current read position
+	if(contentLen > bytesRemaining()+1) {
+		/*
+		// If it exceeds, read only up to the number of bytes remaining
+		dataLen = bytesRemaining();
+		*/
+		// If it exceeds, there's a potential security issue and we can't reliably parse
+		stringstream pes;
+		pes << "Content-Length (" << hlenstr << ") is greater than remaining bytes (" << bytesRemaining() << ")";
+		parseErrorStr = pes.str();
+		return false;
+	} else {
+		// Otherwise, we ca probably trust Content-Length is valid and read the specificed number of bytes
+		dataLen = contentLen;
+	}
+
+	// Create a big enough buffer to store the data
+	unsigned int dIdx = 0, s = size();
+	data = new byte[dataLen];
+	
+	// Grab all the bytes from the current position to the end
+	for(unsigned int i = getReadPos(); i < s; i++) {
+		data[dIdx] = get(i);
+		dIdx++;
+	}
+	
+	// TODO: Handle chuncked Request/Response parsing (with footers) here
+	
+	return true;
+}
+
+/**
  * Add Header to the Map from string
  * Takes a formatted header string "Header: value", parse it, and put it into the map as a key,value pair.
  *
@@ -166,19 +262,6 @@ void HTTPMessage::addHeader(string line) {
  */
 void HTTPMessage::addHeader(string key, string value) {
     headers->insert(pair<string, string>(key, value));
-}
-
-/**
- * Put Headers
- * Write all headers currently in the 'headers' map to the ByteBuffer.
- * 'Header: value'
- */
-void HTTPMessage::putHeaders() {
-    map<string,string>::const_iterator it;
-    for(it = headers->begin(); it != headers->end(); it++) {
-		string final = it->first + ": " + it->second;
-		putLine(final, true);
-	}
 }
 
 /**
