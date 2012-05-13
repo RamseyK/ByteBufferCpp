@@ -40,39 +40,53 @@ void HTTPResponse::init() {
 }
 
 /**
- * Get the status string representation of the Response's set status code.
- * To be read by humans, non standard representation
- *
+ * Determine the status code based on the parsed Responses reason string
+ * The reason string is non standard so this method needs to change in order to handle
+ * responses with different kinds of strings
 */
-string HTTPResponse::getStatusStr() {
-    // Place the status code as part of the human representation.
-    stringstream ret;
-    ret << status << " - ";
-    
+void HTTPResponse::determineStatusCode() {
+	if(reason.find("Continue") != string::npos) {
+		status = Status(CONTINUE);
+	} else if(reason.find("OK") != string::npos) {
+		status = Status(OK);
+	} else if(reason.find("Bad Request") != string::npos) {
+		status = Status(BAD_REQUEST);
+	} else if(reason.find("Not Found") != string::npos) {
+		status = Status(NOT_FOUND);
+	} else if(reason.find("Server Error") != string::npos) {
+		status = Status(SERVER_ERROR);
+	} else if(reason.find("Not Implemented") != string::npos) {
+		status = Status(NOT_IMPLEMENTED);
+	} else {
+	}
+}
+
+/**
+ * Determine the reason string based on the Response's status code
+*/
+void HTTPResponse::determineReasonStr() {
     switch(status) {
         case Status(CONTINUE):
-            ret << "Continue";
+            reason = "Continue";
             break;
         case Status(OK):
-            ret << "OK";
+            reason = "OK";
             break;
         case Status(BAD_REQUEST):
-        	ret << "Bad Request";
+        	reason = "Bad Request";
         	break;
         case Status(NOT_FOUND):
-            ret << "Not Found";
+            reason = "Not Found";
             break;
         case Status(SERVER_ERROR):
-            ret << "Internal Server Error";
+            reason = "Internal Server Error";
             break;
         case Status(NOT_IMPLEMENTED):
-            ret << "Method not implemented";
+            reason = "Method not implemented";
             break;
         default:
             break;
     }
-    
-    return ret.str();
 }
 
 /**
@@ -97,7 +111,7 @@ byte* HTTPResponse::create(bool freshCreate) {
 	
     // Insert the status line: <version> <status code> <reason>\r\n
     stringstream sline;
-    sline << version << " " << status << " " << getStatusStr();
+	sline << version << " " << status << " " << reason;
     putLine(sline.str());
     
     // Put all headers
@@ -131,7 +145,7 @@ bool HTTPResponse::parse() {
 	// Get elements from the status line: <version> <status code> <reason>\r\n
 	version = getStrElement();
 	statusstr = getStrElement();
-	status = atoi(statusstr.c_str());
+	determineStatusCode();
 	reason = getLine(); // Pull till \r\n termination
 	
 	// Validate the HTTP version. If there is a mismatch, discontinue parsing

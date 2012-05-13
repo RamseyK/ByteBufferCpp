@@ -185,7 +185,7 @@ void HTTPMessage::parseHeaders() {
 bool HTTPMessage::parseBody() {
 	// Content-Length should exist (size of the Body data) if there is body data
 	string hlenstr = "";
-	int contentLen = 0;
+	unsigned int contentLen = 0;
 	hlenstr = getHeaderValue("Content-Length");
 	
 	// No body data to read:

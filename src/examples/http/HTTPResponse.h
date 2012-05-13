@@ -16,18 +16,21 @@
  limitations under the License.
  */
 
-#ifndef _HTTPResponse_h
-#define _HTTPResponse_h
+#ifndef _HTTPRESPONSE_H_
+#define _HTTPRESPONSE_H_
 
 #include <ctime>
 
-#include "../../ByteBuffer.h"
+#include "HTTPMessage.h"
 
 class HTTPResponse : public HTTPMessage {
 private:    
     // Response variables
     int status;
     string reason;
+
+	void determineReasonStr();
+	void determineStatusCode();
 
 protected:
 	virtual void init();
@@ -43,12 +46,11 @@ public:
     
     // Accessors & Mutators
     
-    string getStatusStr();
     void setStatus (int scode) {
         status = scode;
+		determineReasonStr();
     }
     
-    // Return's parsed reason string
     string getReason() {
     	return reason;
     }

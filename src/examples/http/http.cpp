@@ -127,7 +127,7 @@ int main() {
 		printf("res parse error: %s\n", res->getParseError().c_str());
 		testFailed = true;
 	} else {
-		printf("HTTPResponse(res): %s %s\n", res->getVersion().c_str(), res->getStatusStr().c_str());
+		printf("HTTPResponse(res): %s %s\n", res->getVersion().c_str(), res->getReason().c_str());
 		printf("res headers (%i):\n", res->getNumHeaders());
 		for(int i = 0; i < res->getNumHeaders(); i++) {
 			printf("%s\n", res->getHeaderStr(i).c_str());
