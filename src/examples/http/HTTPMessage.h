@@ -40,7 +40,7 @@ enum Method {
 	TRACE = 5,
 	OPTIONS = 6,
 	CONNECT = 7,
-	PATH = 8
+	PATCH = 8
 };
 
 const static char* const requestMethodStr[NUM_METHODS] = {
@@ -52,7 +52,7 @@ const static char* const requestMethodStr[NUM_METHODS] = {
 	"TRACE", // 5
 	"OPTIONS", // 6
 	"CONNECT", // 7
-	"PATH" // 8
+	"PATCH" // 8
 };
 
 
@@ -117,6 +117,7 @@ public:
     // Header Map manipulation
 	void addHeader(string line);
     void addHeader(string key, string value);
+	void addHeader(string key, int value);
     string getHeaderValue(string key);
 	string getHeaderStr(int index);
 	int getNumHeaders();
