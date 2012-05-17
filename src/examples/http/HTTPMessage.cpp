@@ -32,11 +32,6 @@ HTTPMessage::HTTPMessage(byte* pData, unsigned int len) : ByteBuffer(pData, len)
 }
 
 HTTPMessage::~HTTPMessage() {
-	if(createRetData != NULL) {
-		delete createRetData;
-		createRetData = NULL;
-	}
-
     headers->clear();
     delete headers;
 }
@@ -48,9 +43,6 @@ void HTTPMessage::init() {
 	dataLen = 0;
 	
 	version = HTTP_VERSION; // By default, all create() will indicate the version is whatever HTTP_VERSION is
-	
-	createRetData = NULL;
-	createCached = false;
     
     headers = new map<string, string>();
 }

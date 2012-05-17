@@ -41,7 +41,7 @@ public:
     HTTPResponse(byte *pData, unsigned int len);
     virtual ~HTTPResponse();
     
-    virtual byte* create(bool freshCreate=false);
+    virtual byte* create();
     virtual bool parse();
     
     // Accessors & Mutators

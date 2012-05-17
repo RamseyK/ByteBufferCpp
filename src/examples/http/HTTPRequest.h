@@ -35,7 +35,7 @@ public:
     HTTPRequest(byte *pData, unsigned int len);
     virtual ~HTTPRequest();
     
-    virtual byte *create(bool freshCreate=false);
+    virtual byte *create();
     virtual bool parse();
 
 	// Helper functions

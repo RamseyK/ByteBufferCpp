@@ -87,10 +87,6 @@ protected:
 	// Message Body Data (Resource in the case of a response, extra parameters in the case of a request)
 	byte* data;
 	unsigned int dataLen;
-	
-	// Caching variables
-	bool createCached;
-	byte* createRetData;
 
 protected:
     virtual void init();
@@ -101,8 +97,8 @@ public:
     HTTPMessage(byte *pData, unsigned int len);
     virtual ~HTTPMessage();
     
-    virtual byte* create(bool freshCreate=false) {return NULL;};
-    virtual bool parse() {return false;};
+	virtual byte* create() = 0;
+	virtual bool parse() = 0;
     
     // Create helpers
     void putLine(string str = "", bool crlf_end=true);

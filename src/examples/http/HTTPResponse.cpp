@@ -82,7 +82,7 @@ void HTTPResponse::determineReasonStr() {
             reason = "Internal Server Error";
             break;
         case Status(NOT_IMPLEMENTED):
-            reason = "Method not implemented";
+            reason = "Not Implemented";
             break;
         default:
             break;
@@ -93,21 +93,11 @@ void HTTPResponse::determineReasonStr() {
  * Create
  * Create and return a byte array of an HTTP response, built from the variables of this HTTPResponse
  *
- * @param freshCreate If true, force a rebuild of the packet even if there's a previously cached version
  * @return Byte array of this HTTPResponse to be sent over the wire
  */
-byte* HTTPResponse::create(bool freshCreate) {
-    // Clear the bytebuffer in the event this isn't the first call of create(), or if a fresh create is desired
-	if(!createCached || freshCreate) {
-		clear();
-	} else { // Otherwise, return the already created data
-		return createRetData;
-	}
-	
-	if(createRetData != NULL) {
-		delete createRetData;
-		createRetData = NULL;
-	}
+byte* HTTPResponse::create() {
+    // Clear the bytebuffer in the event this isn't the first call of create()
+	clear();
 	
     // Insert the status line: <version> <status code> <reason>\r\n
     stringstream sline;
@@ -123,12 +113,9 @@ byte* HTTPResponse::create(bool freshCreate) {
     }
     
     // Allocate space for the returned byte array and return it
-	createRetData = new byte[size()];
+	byte* createRetData = new byte[size()];
 	setReadPos(0);
 	getBytes(createRetData, size());
-
-	// createCached should now be true, because a create was successfully performed.
-	createCached = true;
     
     return createRetData;
 }

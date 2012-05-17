@@ -80,21 +80,11 @@ string HTTPRequest::methodIntToStr(unsigned int mid) {
  * Create
  * Create and return a byte array of an HTTP request, built from the variables of this HTTPRequest
  *
- * @param freshCreate If true, force a rebuild of the packet even if there's a previously cached version
  * @return Byte array of this HTTPRequest to be sent over the wire
  */
-byte* HTTPRequest::create(bool freshCreate) {
-    // Clear the bytebuffer in the event this isn't the first call of create(), or if a fresh create is desired
-	if(!createCached || freshCreate) {
-		clear();
-	} else { // Otherwise, return the already created data
-		return createRetData;
-	}
-	
-	if(createRetData != NULL) {
-		delete createRetData;
-		createRetData = NULL;
-	}
+byte* HTTPRequest::create() {
+    // Clear the bytebuffer in the event this isn't the first call of create()
+	clear();
     
     // Insert the initial line: <method> <path> <version>\r\n
     string mstr = "";
@@ -114,12 +104,9 @@ byte* HTTPRequest::create(bool freshCreate) {
     }
     
     // Allocate space for the returned byte array and return it
-	createRetData = new byte[size()];
+	byte* createRetData = new byte[size()];
 	setReadPos(0);
 	getBytes(createRetData, size());
-
-	// createCached should now be true, because a create was successfully performed.
-	createCached = true;
     
     return createRetData;
 }

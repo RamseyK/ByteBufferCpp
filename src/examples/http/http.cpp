@@ -26,7 +26,7 @@ using namespace std;
 
 int main() {
 	bool testFailed = false;
-	HTTPMessage *msg = new HTTPMessage("line1\r\nline2\nline3");
+	HTTPMessage *msg = new HTTPRequest("line1\r\nline2\nline3");
     HTTPRequest *req = new HTTPRequest("POST /sample/path.html HTTP/1.1\r\nHeader1: value1\r\nHeader2: value2\r\nHeader3: value3\r\nContent-Length: 5\r\n\r\ndata");
 	HTTPRequest *req2 = new HTTPRequest();
 	HTTPRequest *req3 = NULL;
