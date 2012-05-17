@@ -19,15 +19,13 @@
 #ifndef _HTTPRESPONSE_H_
 #define _HTTPRESPONSE_H_
 
-#include <ctime>
-
 #include "HTTPMessage.h"
 
 class HTTPResponse : public HTTPMessage {
 private:    
     // Response variables
     int status;
-    string reason;
+    std::string reason;
 
 	void determineReasonStr();
 	void determineStatusCode();
@@ -37,7 +35,7 @@ protected:
     
 public:
     HTTPResponse();
-    HTTPResponse(string sData);
+    HTTPResponse(std::string sData);
     HTTPResponse(byte *pData, unsigned int len);
     virtual ~HTTPResponse();
     
@@ -51,7 +49,7 @@ public:
 		determineReasonStr();
     }
     
-    string getReason() {
+    std::string getReason() {
     	return reason;
     }
 };

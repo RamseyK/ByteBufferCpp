@@ -23,7 +23,7 @@ HTTPResponse::HTTPResponse() : HTTPMessage() {
     this->init();
 }
 
-HTTPResponse::HTTPResponse(string sData) : HTTPMessage(sData) {
+HTTPResponse::HTTPResponse(std::string sData) : HTTPMessage(sData) {
     this->init();
 }
 
@@ -45,17 +45,17 @@ void HTTPResponse::init() {
  * responses with different kinds of strings
 */
 void HTTPResponse::determineStatusCode() {
-	if(reason.find("Continue") != string::npos) {
+	if(reason.find("Continue") != std::string::npos) {
 		status = Status(CONTINUE);
-	} else if(reason.find("OK") != string::npos) {
+	} else if(reason.find("OK") != std::string::npos) {
 		status = Status(OK);
-	} else if(reason.find("Bad Request") != string::npos) {
+	} else if(reason.find("Bad Request") != std::string::npos) {
 		status = Status(BAD_REQUEST);
-	} else if(reason.find("Not Found") != string::npos) {
+	} else if(reason.find("Not Found") != std::string::npos) {
 		status = Status(NOT_FOUND);
-	} else if(reason.find("Server Error") != string::npos) {
+	} else if(reason.find("Server Error") != std::string::npos) {
 		status = Status(SERVER_ERROR);
-	} else if(reason.find("Not Implemented") != string::npos) {
+	} else if(reason.find("Not Implemented") != std::string::npos) {
 		status = Status(NOT_IMPLEMENTED);
 	} else {
 	}
@@ -100,7 +100,7 @@ byte* HTTPResponse::create() {
 	clear();
 	
     // Insert the status line: <version> <status code> <reason>\r\n
-    stringstream sline;
+    std::stringstream sline;
 	sline << version << " " << status << " " << reason;
     putLine(sline.str());
     
@@ -127,7 +127,7 @@ byte* HTTPResponse::create() {
  * @param True if successful. If false, sets parseErrorStr for reason of failure
  */
 bool HTTPResponse::parse() {
-	string statusstr;
+	std::string statusstr;
 	
 	// Get elements from the status line: <version> <status code> <reason>\r\n
 	version = getStrElement();

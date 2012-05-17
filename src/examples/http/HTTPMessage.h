@@ -77,12 +77,12 @@ enum Status {
 
 class HTTPMessage : public ByteBuffer {
 private:
-    map<string, string> *headers;
+    std::map<std::string, std::string> *headers;
 
 protected:
-	string parseErrorStr;
+	std::string parseErrorStr;
 	
-	string version;
+	std::string version;
 	
 	// Message Body Data (Resource in the case of a response, extra parameters in the case of a request)
 	byte* data;
@@ -93,7 +93,7 @@ protected:
     
 public:
     HTTPMessage();
-    HTTPMessage(string sData);
+    HTTPMessage(std::string sData);
     HTTPMessage(byte *pData, unsigned int len);
     virtual ~HTTPMessage();
     
@@ -101,35 +101,35 @@ public:
 	virtual bool parse() = 0;
     
     // Create helpers
-    void putLine(string str = "", bool crlf_end=true);
+    void putLine(std::string str = "", bool crlf_end=true);
     void putHeaders();
     
     // Parse helpers
-	string getLine();
-    string getStrElement(char delim = 0x20); // 0x20 = "space"
+	std::string getLine();
+    std::string getStrElement(char delim = 0x20); // 0x20 = "space"
     void parseHeaders();
     bool parseBody();
     
     // Header Map manipulation
-	void addHeader(string line);
-    void addHeader(string key, string value);
-	void addHeader(string key, int value);
-    string getHeaderValue(string key);
-	string getHeaderStr(int index);
+	void addHeader(std::string line);
+    void addHeader(std::string key, std::string value);
+	void addHeader(std::string key, int value);
+    std::string getHeaderValue(std::string key);
+	std::string getHeaderStr(int index);
 	int getNumHeaders();
     void clearHeaders();
     
     // Getters & Setters
 
-	string getParseError() {
+	std::string getParseError() {
 		return parseErrorStr;
 	}
 	
-    void setVersion(string v) {
+    void setVersion(std::string v) {
         version = v;
     }
     
-    string getVersion() {
+    std::string getVersion() {
         return version;
     }
     

@@ -34,17 +34,15 @@
 #include <stdio.h>
 #endif
 
-using namespace std;
-
 typedef unsigned char byte;
 
 class ByteBuffer {
 private:
 	unsigned int rpos, wpos;
-	vector<byte> buf;
+	std::vector<byte> buf;
 
 #ifdef BB_UTILITY
-	string name;
+	std::string name;
 #endif
 
     template <typename T> T read() {
@@ -172,8 +170,8 @@ public:
 
 	// Utility Functions
 #ifdef BB_UTILITY
-	void setName(string n);
-	string getName();
+	void setName(std::string n);
+	std::string getName();
 	void printInfo();
 	void printAH();
 	void printAscii();

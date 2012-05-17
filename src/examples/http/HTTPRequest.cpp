@@ -23,7 +23,7 @@ HTTPRequest::HTTPRequest() : HTTPMessage() {
     this->init();
 }
 
-HTTPRequest::HTTPRequest(string sData) : HTTPMessage(sData) {
+HTTPRequest::HTTPRequest(std::string sData) : HTTPMessage(sData) {
     this->init();
 }
 
@@ -46,7 +46,7 @@ void HTTPRequest::init() {
  * @param name String representation of the Method
  * @return Corresponding Method ID, -1 if unable to find the method
  */
-int HTTPRequest::methodStrToInt(string name) {
+int HTTPRequest::methodStrToInt(std::string name) {
     // Method name cannot must be between 1 and 10 characters. Anything outside those bounds shouldn't be compared at all
     if(name.empty() || (name.size() >= 10))
         return -1;
@@ -63,16 +63,16 @@ int HTTPRequest::methodStrToInt(string name) {
 }
 
 /**
- * Takes the method ID in the Method enum and returns the corresponding string representation
+ * Takes the method ID in the Method enum and returns the corresponding std::string representation
  * @param mid Method ID to lookup
- * @return The method name in the from of a string. Blank if unable to find the method
+ * @return The method name in the from of a std::string. Blank if unable to find the method
  */
-string HTTPRequest::methodIntToStr(unsigned int mid) {
+std::string HTTPRequest::methodIntToStr(unsigned int mid) {
     // ID is out of bounds of the possible requestMethodStr indexes
     if(mid >= NUM_METHODS)
         return "";
     
-    // Return the string matching the id
+    // Return the std::string matching the id
     return requestMethodStr[mid];
 }
 
@@ -87,7 +87,7 @@ byte* HTTPRequest::create() {
 	clear();
     
     // Insert the initial line: <method> <path> <version>\r\n
-    string mstr = "";
+    std::string mstr = "";
     mstr = methodIntToStr(method);
     if(mstr.empty()) {
         printf("Could not create HTTPRequest, unknown method id: %i\n", method);
@@ -118,7 +118,7 @@ byte* HTTPRequest::create() {
  * @param True if successful. If false, sets parseErrorStr for reason of failure
  */
 bool HTTPRequest::parse() {
-	string initial = "", methodName = "";
+	std::string initial = "", methodName = "";
 
 	// Get elements from the initial line: <method> <path> <version>\r\n
 	methodName = getStrElement();
