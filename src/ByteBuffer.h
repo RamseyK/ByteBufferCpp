@@ -16,8 +16,8 @@
    limitations under the License.
 */
 
-#ifndef _BYTEBUFFER_H
-#define _BYTEBUFFER_H
+#ifndef _BYTEBUFFER_H_
+#define _BYTEBUFFER_H_
 
 // Default number of bytes to allocate in the backing buffer if no size is provided
 #define DEFAULT_SIZE 4096
@@ -63,7 +63,7 @@ private:
 		if (size() < (wpos + s))
 			buf.resize(wpos + s);
 		memcpy(&buf[wpos], (byte*)&data, s);
-		//printf("writing %c to %u\n", ((uns, wpos);
+		//printf("writing %c to %i\n", (byte)data, wpos);
 
 		wpos += s;
 	}
@@ -79,7 +79,7 @@ private:
 public:
 	ByteBuffer(unsigned int size = DEFAULT_SIZE);
 	ByteBuffer(byte* arr, unsigned int size);
-	~ByteBuffer();
+	virtual ~ByteBuffer();
 
 	unsigned int bytesRemaining(); // Number of bytes from the current read position till the end of the buffer
 	void clear(); // Clear our the vector and reset read and write positions

@@ -17,16 +17,20 @@
 */
 
 #include <stdio.h>
+#include <string>
 #include "ByteBuffer.h"
 
 int main() {
 	ByteBuffer *bb1 = new ByteBuffer(30);
 	ByteBuffer *bb2 = new ByteBuffer();
 	bb1->printPosition();
+	printf("bb1 Bytes Remaining: %i\n", bb1->bytesRemaining());
 	bb1->put(0xDE);
 	bb1->put(0xAD);
 	bb1->put(0xBA);
 	bb1->put(0xBE);
+	bb1->printPosition();
+	printf("bb1 Bytes Remaining: %i\n", bb1->bytesRemaining());
 
 	bb1->printHex();
 	bb1->printPosition();
@@ -48,7 +52,7 @@ int main() {
     printf("f0 = %i, f1 = %i, f2 = %i\n", f0, f1, f2);
 	bb1->printPosition();
 
-	string test = "TesT\r\ntest2\n";
+	std::string test = "TesTtest2";
 	bb2->putBytes((byte*)test.c_str(), test.size());
 	bb2->printHex();
 	bb2->printAscii();

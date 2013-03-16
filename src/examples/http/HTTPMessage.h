@@ -16,8 +16,8 @@
  limitations under the License.
  */
 
-#ifndef _HTTPMessage_h
-#define _HTTPMessage_h
+#ifndef _HTTPMESSAGE_H_
+#define _HTTPMESSAGE_H_
 
 #include <map>
 #include <string>

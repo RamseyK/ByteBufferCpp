@@ -16,8 +16,8 @@
  limitations under the License.
  */
 
-#ifndef _HTTPRequest_h
-#define _HTTPRequest_h
+#ifndef _HTTPREQUEST_H_
+#define _HTTPREQUEST_H_
 
 #include "HTTPMessage.h"
 
