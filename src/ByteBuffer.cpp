@@ -21,7 +21,7 @@
 /**
  * ByteBuffer constructor
  * Reserves specified size in internal vector
- * 
+ *
  * @param size Size (in bytes) of space to preallocate internally. Default is set in DEFAULT_SIZE
  */
 ByteBuffer::ByteBuffer(unsigned int size) {
@@ -35,7 +35,7 @@ ByteBuffer::ByteBuffer(unsigned int size) {
 /**
  * ByteBuffer constructor
  * Consume an entire byte array of length len in the ByteBuffer
- * 
+ *
  * @param arr byte array of data (should be of length len)
  * @param size Size of space to allocate
  */
@@ -49,7 +49,7 @@ ByteBuffer::ByteBuffer(byte* arr, unsigned int size) {
 		clear();
 		putBytes(arr, size);
 	}
-	
+
 #ifdef BB_UTILITY
 	name = "";
 #endif
@@ -93,7 +93,7 @@ ByteBuffer* ByteBuffer::clone() {
 
 	// Copy data
 	for(unsigned int i = 0; i < buf.size(); i++) {
-		ret->put(i, (byte)get(i));
+		ret->put((byte)get(i));
 	}
 
 	// Reset positions
@@ -165,7 +165,7 @@ void ByteBuffer::replace(byte key, byte rep, unsigned int start, bool firstOccur
         // Wasn't actually found, bounds of buffer were exceeded
         if((key != 0) && (data == 0))
             break;
-        
+
         // Key was found in array, perform replacement
         if(data == key) {
             buf[i] = rep;
