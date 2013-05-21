@@ -1,7 +1,7 @@
-ByteBuffer
+ByteBufferCpp
 Ramsey Kant
 
-https://github.com/RamseyK
+https://github.com/RamseyK/ByteBufferCpp
 http://code.google.com/p/bytebuffer-cpp/
 
 
@@ -16,3 +16,5 @@ Why Byte Buffer?
 Example usage scenarios
 -HTTP: Request & Response parsers
 -Packets: Parse or Create custom packets to send over the network in a quick and easy manner 
+
+Looking for ByteBuffer in C? Try https://github.com/RamseyK/ByteBufferC
