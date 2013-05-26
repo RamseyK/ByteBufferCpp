@@ -22,7 +22,7 @@
  * ByteBuffer constructor
  * Reserves specified size in internal vector
  *
- * @param size Size (in uint8_ts) of space to preallocate internally. Default is set in DEFAULT_SIZE
+ * @param size Size (in bytes) of space to preallocate internally. Default is set in DEFAULT_SIZE
  */
 ByteBuffer::ByteBuffer(uint32_t size) {
 	buf.reserve(size);
@@ -63,10 +63,10 @@ ByteBuffer::~ByteBuffer() {
 }
 
 /**
- * uint8_ts Remaining
- * Returns the number of uint8_ts from the current read position till the end of the buffer
+ * Bytes Remaining
+ * Returns the number of bytes from the current read position till the end of the buffer
  *
- * @return Number of uint8_ts from rpos to the end (size())
+ * @return Number of bytes from rpos to the end (size())
  */
 uint32_t ByteBuffer::bytesRemaining() {
 	return size()-rpos;
@@ -105,7 +105,7 @@ ByteBuffer* ByteBuffer::clone() {
 
 /**
  * Equals, test for data equivilancy
- * Compare this ByteBuffer to another by looking at each uint8_t in the internal buffers and making sure they are the same
+ * Compare this ByteBuffer to another by looking at each byte in the internal buffers and making sure they are the same
  *
  * @param other A pointer to a ByteBuffer to compare to this one
  * @return True if the internal buffers match. False if otherwise
@@ -115,7 +115,7 @@ bool ByteBuffer::equals(ByteBuffer* other) {
 	if(size() != other->size())
 		return false;
 
-	// Compare uint8_t by uint8_t
+	// Compare byte by byte
 	uint32_t len = size();
 	for(uint32_t i = 0; i < len; i++) {
 		if((uint8_t)get(i) != (uint8_t)other->get(i))
@@ -139,7 +139,7 @@ void ByteBuffer::resize(uint32_t newSize) {
 
 /**
  * Size
- * Returns the size of the internal buffer...not necessarily the length of uint8_ts used as data!
+ * Returns the size of the internal buffer...not necessarily the length of bytes used as data!
  *
  * @return size of the internal buffer
  */
@@ -261,7 +261,7 @@ void ByteBuffer::put(uint8_t b, uint32_t index) {
 }
 
 void ByteBuffer::putBytes(uint8_t* b, uint32_t len) {
-	// Insert the data one uint8_t at a time into the internal buffer at position i+starting index
+	// Insert the data one byte at a time into the internal buffer at position i+starting index
 	for(uint32_t i = 0; i < len; i++)
 		append<uint8_t>(b[i]);
 }
@@ -269,7 +269,7 @@ void ByteBuffer::putBytes(uint8_t* b, uint32_t len) {
 void ByteBuffer::putBytes(uint8_t* b, uint32_t len, uint32_t index) {
 	wpos = index;
 
-	// Insert the data one uint8_t at a time into the internal buffer at position i+starting index
+	// Insert the data one byte at a time into the internal buffer at position i+starting index
 	for(uint32_t i = 0; i < len; i++)
 		append<uint8_t>(b[i]);
 }
