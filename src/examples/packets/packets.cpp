@@ -25,7 +25,7 @@
 
 using namespace std;
 
-ByteBuffer* createLoginPacket(int version, string username, string password);
+ByteBuffer* createLoginPacket(int32_t version, string username, string password);
 ByteBuffer* createChatMsgPacket(string name, string msg);
 void serverParser(ByteBuffer* pkt);
 
@@ -48,7 +48,7 @@ enum Opcode {
  * @param password Password of client logging in
  * @return A pointer to a byte array ready to be sent over the wire
  */
-ByteBuffer* createLoginPacket(int version, string username, string password) {
+ByteBuffer* createLoginPacket(int32_t version, string username, string password) {
 	ByteBuffer* pkt = new ByteBuffer(100);
 
 	// Write the opcode as the first bytes of the packet (login)
@@ -59,11 +59,11 @@ ByteBuffer* createLoginPacket(int version, string username, string password) {
 
 	// Size & Contents of null terminated username string
 	pkt->putInt(username.size()+1);
-	pkt->putBytes((byte*)username.c_str(), username.size()+1);
+	pkt->putBytes((uint8_t*)username.c_str(), username.size()+1);
 
 	// Size & Contents of null terminated password string
 	pkt->putInt(password.size()+1);
-	pkt->putBytes((byte*)password.c_str(), password.size()+1);
+	pkt->putBytes((uint8_t*)password.c_str(), password.size()+1);
 
 	return pkt;
 }
@@ -84,18 +84,18 @@ ByteBuffer* createChatMsgPacket(string name, string msg) {
 
 	// Size & Contents of null terminated name string
 	pkt->putInt(name.size()+1);
-	pkt->putBytes((byte*)name.c_str(), name.size()+1);
+	pkt->putBytes((uint8_t*)name.c_str(), name.size()+1);
 
 	// Size & Contents of null terminated message string
 	pkt->putInt(msg.size()+1);
-	pkt->putBytes((byte*)msg.c_str(), msg.size()+1);
+	pkt->putBytes((uint8_t*)msg.c_str(), msg.size()+1);
 
 	return pkt;
 }
 
 /**
  * Packet Parser
- * This ficticious packet parser on the "server" will read the ByteBuffer'd packets and print out information about each packet it understands
+ * This ficticious packet parser on the "server" will read the ByteBuffer'd packets and print32_t out information about each packet it understands
  * according to the networking protocol
  *
  * @param pkt A pointer to a ByteBuffer containing the packet data
@@ -112,24 +112,24 @@ void serverParser(ByteBuffer* pkt) {
 		case Opcode(LOGIN): {
 			printf("Received a Login packet. Information: \n");
 
-			int version = 0;
-			int usize = 0, psize = 0;
-			byte* username;
-			byte* password;
+			int32_t version = 0;
+			int32_t usize = 0, psize = 0;
+			uint8_t *username;
+			uint8_t *password;
 
 			// Parse the packet based off a known structure
 
 			version = pkt->getInt();
 
 			usize = pkt->getInt();
-			username = new byte[usize];
+			username = new uint8_t[usize];
 			pkt->getBytes(username, usize);
 			
 			psize = pkt->getInt();
-			password = new byte[psize];
+			password = new uint8_t[psize];
 			pkt->getBytes(password, psize);
 
-			printf("Client Version: %i, Username: %s, Password: %s\n", version, username, password);
+			printf("Client Version: %i, Username: %s Password: %s\n", version, username, password);
 
 			delete [] username;
 			delete [] password;
@@ -138,21 +138,21 @@ void serverParser(ByteBuffer* pkt) {
 		case Opcode(MESSAGE): {
 			printf("Received a Message packet. Information: \n");
 
-			int usize = 0, msize = 0;
-			byte* name;
-			byte* msg;
+			int32_t usize = 0, msize = 0;
+			uint8_t *name;
+			uint8_t *msg;
 
 			// Parse the packet based off a known structure
 
 			usize = pkt->getInt();
-			name = new byte[usize];
+			name = new uint8_t[usize];
 			pkt->getBytes(name, usize);
 			
 			msize = pkt->getInt();
-			msg = new byte[msize];
+			msg = new uint8_t[msize];
 			pkt->getBytes(msg, msize);
 
-			printf("Name: %s, Msg: %s\n", name, msg);
+			printf("Name: %s Msg: %s\n", name, msg);
 
 			delete [] name;
 			delete [] msg;
@@ -166,7 +166,7 @@ void serverParser(ByteBuffer* pkt) {
 	printf("\n");
 }
 
-int main() {
+int32_t main() {
 	// Create two packets that conform to the network protocol
 	ByteBuffer *loginPkt = createLoginPacket(1234, "fubar", "testpwd");
 	ByteBuffer *msg = createChatMsgPacket("fubar", "message yay!");

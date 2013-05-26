@@ -27,7 +27,7 @@ HTTPRequest::HTTPRequest(std::string sData) : HTTPMessage(sData) {
     this->init();
 }
 
-HTTPRequest::HTTPRequest(byte* pData, unsigned int len) : HTTPMessage(pData, len) {
+HTTPRequest::HTTPRequest(uint8_t* pData, uint32_t len) : HTTPMessage(pData, len) {
     this->init();
 }
 
@@ -46,14 +46,14 @@ void HTTPRequest::init() {
  * @param name String representation of the Method
  * @return Corresponding Method ID, -1 if unable to find the method
  */
-int HTTPRequest::methodStrToInt(std::string name) {
+int32_t HTTPRequest::methodStrToInt(std::string name) {
     // Method name cannot must be between 1 and 10 characters. Anything outside those bounds shouldn't be compared at all
     if(name.empty() || (name.size() >= 10))
         return -1;
     
     // Loop through requestMethodStr array and attempt to match the 'name' with a known method in the array
-	int ret = -1;
-	for(unsigned int i = 0; i < NUM_METHODS; i++) {
+	int32_t ret = -1;
+	for(uint32_t i = 0; i < NUM_METHODS; i++) {
 		if(strcmp(requestMethodStr[i], name.c_str()) == 0) {
 			ret = i;
 			break;
@@ -67,7 +67,7 @@ int HTTPRequest::methodStrToInt(std::string name) {
  * @param mid Method ID to lookup
  * @return The method name in the from of a std::string. Blank if unable to find the method
  */
-std::string HTTPRequest::methodIntToStr(unsigned int mid) {
+std::string HTTPRequest::methodIntToStr(uint32_t mid) {
     // ID is out of bounds of the possible requestMethodStr indexes
     if(mid >= NUM_METHODS)
         return "";
@@ -82,7 +82,7 @@ std::string HTTPRequest::methodIntToStr(unsigned int mid) {
  *
  * @return Byte array of this HTTPRequest to be sent over the wire
  */
-byte* HTTPRequest::create() {
+uint8_t* HTTPRequest::create() {
     // Clear the bytebuffer in the event this isn't the first call of create()
 	clear();
     
@@ -104,7 +104,7 @@ byte* HTTPRequest::create() {
     }
     
     // Allocate space for the returned byte array and return it
-	byte* createRetData = new byte[size()];
+	uint8_t* createRetData = new uint8_t[size()];
 	setReadPos(0);
 	getBytes(createRetData, size());
     

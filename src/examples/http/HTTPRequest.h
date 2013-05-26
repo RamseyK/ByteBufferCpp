@@ -23,7 +23,7 @@
 
 class HTTPRequest : public HTTPMessage {
 private:
-    int method;
+    int32_t method;
     std::string requestUri;
     
 protected:
@@ -32,24 +32,24 @@ protected:
 public:
     HTTPRequest();
     HTTPRequest(std::string sData);
-    HTTPRequest(byte *pData, unsigned int len);
+    HTTPRequest(uint8_t *pData, uint32_t len);
     virtual ~HTTPRequest();
     
-    virtual byte *create();
+    virtual uint8_t *create();
     virtual bool parse();
 
 	// Helper functions
 
-	int methodStrToInt(std::string name);
-    std::string methodIntToStr(unsigned int mid);
+	int32_t methodStrToInt(std::string name);
+    std::string methodIntToStr(uint32_t mid);
     
     // Info getters  & setters
     
-    void setMethod(int m) {
+    void setMethod(int32_t m) {
         method = m;
     }
     
-    int getMethod() {
+    int32_t getMethod() {
         return method;
     }
     

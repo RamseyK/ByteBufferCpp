@@ -24,7 +24,7 @@
 class HTTPResponse : public HTTPMessage {
 private:    
     // Response variables
-    int status;
+    int32_t status;
     std::string reason;
 
 	void determineReasonStr();
@@ -36,15 +36,15 @@ protected:
 public:
     HTTPResponse();
     HTTPResponse(std::string sData);
-    HTTPResponse(byte *pData, unsigned int len);
+    HTTPResponse(uint8_t *pData, uint32_t len);
     virtual ~HTTPResponse();
     
-    virtual byte* create();
+    virtual uint8_t* create();
     virtual bool parse();
     
     // Accessors & Mutators
     
-    void setStatus (int scode) {
+    void setStatus (int32_t scode) {
         status = scode;
 		determineReasonStr();
     }

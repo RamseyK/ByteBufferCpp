@@ -27,7 +27,7 @@ HTTPResponse::HTTPResponse(std::string sData) : HTTPMessage(sData) {
     this->init();
 }
 
-HTTPResponse::HTTPResponse(byte* pData, unsigned int len) : HTTPMessage(pData, len) {
+HTTPResponse::HTTPResponse(uint8_t* pData, uint32_t len) : HTTPMessage(pData, len) {
     this->init();
 }
 
@@ -95,7 +95,7 @@ void HTTPResponse::determineReasonStr() {
  *
  * @return Byte array of this HTTPResponse to be sent over the wire
  */
-byte* HTTPResponse::create() {
+uint8_t* HTTPResponse::create() {
     // Clear the bytebuffer in the event this isn't the first call of create()
 	clear();
 	
@@ -113,7 +113,7 @@ byte* HTTPResponse::create() {
     }
     
     // Allocate space for the returned byte array and return it
-	byte* createRetData = new byte[size()];
+	uint8_t* createRetData = new uint8_t[size()];
 	setReadPos(0);
 	getBytes(createRetData, size());
     

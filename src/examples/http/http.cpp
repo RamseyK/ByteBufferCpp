@@ -24,7 +24,7 @@
 
 using namespace std;
 
-int main() {
+int32_t main() {
 	bool testFailed = false;
 	HTTPMessage *msg = new HTTPRequest("line1\r\nline2\nline3");
     HTTPRequest *req = new HTTPRequest("POST /sample/path.html HTTP/1.1\r\nHeader1: value1\r\nHeader2: value2\r\nHeader3: value3\r\nContent-Length: 5\r\n\r\ndata");
@@ -66,13 +66,13 @@ int main() {
 		testFailed = true;
 	} else {
 		printf("HTTPRequest(req): %i %s\n", req->getMethod(), req->getVersion().c_str());
-		byte *data = req->getData();
+		uint8_t *data = req->getData();
 		printf("Data (%i):\n", req->getDataLength());
-		for(unsigned int i = 0; i < req->getDataLength(); i++) {
+		for(uint32_t i = 0; i < req->getDataLength(); i++) {
 			printf("0x%02x ", data[i]);
 		}
 		printf("\n");
-		for(unsigned int i = 0;i < req->getDataLength(); i++) {
+		for(uint32_t i = 0;i < req->getDataLength(); i++) {
 			printf("%c", data[i]);
 		}
 		printf("\n");
@@ -82,8 +82,8 @@ int main() {
 	string req2Content = "var=2";
 	char req2ContentLen[8];
 	sprintf(req2ContentLen, "%u", (unsigned int)req2Content.size());
-	byte* req2Ret = NULL;
-	unsigned int req2Size = 0;
+	uint8_t *req2Ret = NULL;
+	uint32_t req2Size = 0;
 	req2->setMethod(Method(POST));
 	req2->setRequestUri("/dir/test.php");
 	req2->addHeader("From", "user@example.com");;
@@ -91,7 +91,7 @@ int main() {
 	req2->addHeader("Content-Type", "text/html");
 	req2->addHeader("Content-Length", req2ContentLen);
 	req2->addHeader("Multi-Test", "line1,\r\nline2,\r\nline3");
-	req2->setData((byte*)req2Content.c_str(), req2Content.size());
+	req2->setData((uint8_t*)req2Content.c_str(), req2Content.size());
 	req2Ret = req2->create();
 	req2Size = req2->size();
 	printf("\n\n");
@@ -106,16 +106,16 @@ int main() {
 		string req3Header = req3->methodIntToStr(req3->getMethod()) + " " + req3->getRequestUri() + " " + req3->getVersion();
 		printf("HTTPResponse(res3): %s\n", req3Header.c_str());
 		printf("req3 headers (%i):\n", req3->getNumHeaders());
-		for(int i = 0; i < req3->getNumHeaders(); i++) {
+		for(int32_t i = 0; i < req3->getNumHeaders(); i++) {
 			printf("%s\n", req3->getHeaderStr(i).c_str());
 		}
 		printf("req3 data(%i):\n", req3->getDataLength());
-		byte* req3Data = req3->getData();
-		for(unsigned int i = 0; i < req3->getDataLength(); i++) {
+		uint8_t *req3Data = req3->getData();
+		for(uint32_t i = 0; i < req3->getDataLength(); i++) {
 			printf("0x%02x ", req3Data[i]);
 		}
 		printf("\n");
-		for(unsigned int i = 0;i < req3->getDataLength(); i++) {
+		for(uint32_t i = 0;i < req3->getDataLength(); i++) {
 			printf("%c", req3Data[i]);
 		}
 		printf("\n\n");
@@ -129,16 +129,16 @@ int main() {
 	} else {
 		printf("HTTPResponse(res): %s %s\n", res->getVersion().c_str(), res->getReason().c_str());
 		printf("res headers (%i):\n", res->getNumHeaders());
-		for(int i = 0; i < res->getNumHeaders(); i++) {
+		for(int32_t i = 0; i < res->getNumHeaders(); i++) {
 			printf("%s\n", res->getHeaderStr(i).c_str());
 		}
 		printf("res data(%i):\n", res->getDataLength());
-		byte* resData = res->getData();
-		for(unsigned int i = 0; i < res->getDataLength(); i++) {
+		uint8_t *resData = res->getData();
+		for(uint32_t i = 0; i < res->getDataLength(); i++) {
 			printf("0x%02x ", resData[i]);
 		}
 		printf("\n");
-		for(unsigned int i = 0;i < res->getDataLength(); i++) {
+		for(uint32_t i = 0;i < res->getDataLength(); i++) {
 			printf("%c", resData[i]);
 		}
 		printf("\n\n");
@@ -151,7 +151,7 @@ int main() {
     delete res;
     
     if(testFailed) {
-    	printf("TEST PROGRAM FAILED: Read through output carefully to find point of failure\n");
+    	printf("TEST PROGRAM FAILED: Read through output carefully to find point32_t of failure\n");
     } else {
     	printf("TEST PROGRAM PASSED\n");
     }

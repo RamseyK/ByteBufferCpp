@@ -85,8 +85,8 @@ protected:
 	std::string version;
 	
 	// Message Body Data (Resource in the case of a response, extra parameters in the case of a request)
-	byte* data;
-	unsigned int dataLen;
+	uint8_t* data;
+	uint32_t dataLen;
 
 protected:
     virtual void init();
@@ -94,10 +94,10 @@ protected:
 public:
     HTTPMessage();
     HTTPMessage(std::string sData);
-    HTTPMessage(byte *pData, unsigned int len);
+    HTTPMessage(uint8_t *pData, uint32_t len);
     virtual ~HTTPMessage();
     
-	virtual byte* create() = 0;
+	virtual uint8_t* create() = 0;
 	virtual bool parse() = 0;
     
     // Create helpers
@@ -113,10 +113,10 @@ public:
     // Header Map manipulation
 	void addHeader(std::string line);
     void addHeader(std::string key, std::string value);
-	void addHeader(std::string key, int value);
+	void addHeader(std::string key, int32_t value);
     std::string getHeaderValue(std::string key);
-	std::string getHeaderStr(int index);
-	int getNumHeaders();
+	std::string getHeaderStr(int32_t index);
+	int32_t getNumHeaders();
     void clearHeaders();
     
     // Getters & Setters
@@ -133,16 +133,16 @@ public:
         return version;
     }
     
-	void setData(byte* d, unsigned int len) {
+	void setData(uint8_t* d, uint32_t len) {
 		data = d;
 		dataLen = len;
 	}
 
-	byte* getData() {
+	uint8_t* getData() {
 		return data;
 	}
 
-	unsigned int getDataLength() {
+	uint32_t getDataLength() {
 		return dataLen;
 	}
 };
