@@ -23,7 +23,7 @@
 #include <string>
 #include <sstream>
 
-#include "../../ByteBuffer.h"
+#include "../../ByteBuffer.hpp"
 
 // Constants
 #define HTTP_VERSION "HTTP/1.1"

@@ -25,6 +25,9 @@
 // If defined, utility functions within the class are enabled
 #define BB_UTILITY
 
+// If defined, places the class into a namespace called bb
+#define BB_USE_NS
+
 #include <cstdlib>
 #include <cstdint>
 #include <cstring>
@@ -37,13 +40,15 @@
 #include <cstdio>
 #endif
 
+#ifdef BB_USE_NS
 namespace bb {
+#endif
 
 class ByteBuffer {
 public:
 	ByteBuffer(uint32_t size = DEFAULT_SIZE);
 	ByteBuffer(uint8_t* arr, uint32_t size);
-	virtual ~ByteBuffer();
+	~ByteBuffer() = default;
 
 	uint32_t bytesRemaining(); // Number of uint8_ts from the current read position till the end of the buffer
 	void clear(); // Clear our the vector and reset read and write positions
@@ -77,22 +82,22 @@ public:
 
 	// Read
 
-	uint8_t peek(); // Relative peek. Reads and returns the next uint8_t in the buffer from the current position but does not increment the read position
-	uint8_t get(); // Relative get method. Reads the uint8_t at the buffers current position then increments the position
-	uint8_t get(uint32_t index); // Absolute get method. Read uint8_t at index
-	void getBytes(uint8_t* buf, uint32_t len); // Absolute read into array buf of length len
-	char getChar(); // Relative
-	char getChar(uint32_t index); // Absolute
-	double getDouble();
-	double getDouble(uint32_t index);
-	float getFloat();
-	float getFloat(uint32_t index);
-	uint32_t getInt();
-	uint32_t getInt(uint32_t index);
-	uint64_t getLong();
-	uint64_t getLong(uint32_t index);
-	uint16_t getShort();
-	uint16_t getShort(uint32_t index);
+	uint8_t peek() const; // Relative peek. Reads and returns the next uint8_t in the buffer from the current position but does not increment the read position
+	uint8_t get() const; // Relative get method. Reads the uint8_t at the buffers current position then increments the position
+	uint8_t get(uint32_t index) const; // Absolute get method. Read uint8_t at index
+	void getBytes(uint8_t* buf, uint32_t len) const; // Absolute read into array buf of length len
+	char getChar() const; // Relative
+	char getChar(uint32_t index) const; // Absolute
+	double getDouble() const;
+	double getDouble(uint32_t index) const;
+	float getFloat() const;
+	float getFloat(uint32_t index) const;
+	uint32_t getInt() const;
+	uint32_t getInt(uint32_t index) const;
+	uint64_t getLong() const;
+	uint64_t getLong(uint32_t index) const;
+	uint16_t getShort() const;
+	uint16_t getShort(uint32_t index) const;
 
 	// Write
 
@@ -144,14 +149,15 @@ public:
 #endif
 
 private:
-	uint32_t rpos, wpos;
+	uint32_t wpos;
+	mutable uint32_t rpos;
 	std::vector<uint8_t> buf;
 
 #ifdef BB_UTILITY
 	std::string name;
 #endif
 
-	template<typename T> T read() {
+	template<typename T> T read() const {
 		T data = read<T>(rpos);
 		rpos += sizeof(T);
 		return data;
@@ -183,6 +189,8 @@ private:
 	}
 };
 
+#ifdef BB_USE_NS
 }
+#endif
 
 #endif

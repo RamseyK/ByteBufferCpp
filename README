@@ -1,3 +1,13 @@
+Changes in this fork:
+
+- C++14 required
+- Adds ByteBuffer to bb namespace
+- Marking some functions const
+- Changes clone() to return unique_ptr
+- CMake support
+
+-----
+
 ByteBufferCpp
 Ramsey Kant
 

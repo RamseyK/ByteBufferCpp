@@ -18,7 +18,7 @@
 
 #include <iostream>
 #include <stdlib.h>
-#include "../../ByteBuffer.h"
+#include "../../ByteBuffer.hpp"
 #include "HTTPRequest.h"
 #include "HTTPResponse.h"
 

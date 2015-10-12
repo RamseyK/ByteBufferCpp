@@ -21,7 +21,7 @@
  */
 
 #include <iostream>
-#include "../../ByteBuffer.h"
+#include "../../ByteBuffer.hpp"
 
 using namespace std;
 

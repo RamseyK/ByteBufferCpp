@@ -16,9 +16,11 @@
  limitations under the License.
  */
 
-#include "ByteBuffer.h"
+#include "ByteBuffer.hpp"
 
+#ifdef BB_USE_NS
 namespace bb {
+#endif
 
 /**
  * ByteBuffer constructor
@@ -55,13 +57,6 @@ ByteBuffer::ByteBuffer(uint8_t* arr, uint32_t size) {
 #ifdef BB_UTILITY
 	name = "";
 #endif
-}
-
-/**
- * ByteBuffer Deconstructor
- *
- */
-ByteBuffer::~ByteBuffer() {
 }
 
 /**
@@ -179,69 +174,69 @@ void ByteBuffer::replace(uint8_t key, uint8_t rep, uint32_t start, bool firstOcc
 
 // Read Functions
 
-uint8_t ByteBuffer::peek() {
+uint8_t ByteBuffer::peek() const {
 	return read<uint8_t>(rpos);
 }
 
-uint8_t ByteBuffer::get() {
+uint8_t ByteBuffer::get() const {
 	return read<uint8_t>();
 }
 
-uint8_t ByteBuffer::get(uint32_t index) {
+uint8_t ByteBuffer::get(uint32_t index) const {
 	return read<uint8_t>(index);
 }
 
-void ByteBuffer::getBytes(uint8_t* buf, uint32_t len) {
+void ByteBuffer::getBytes(uint8_t* buf, uint32_t len) const {
 	for (uint32_t i = 0; i < len; i++) {
 		buf[i] = read<uint8_t>();
 	}
 }
 
-char ByteBuffer::getChar() {
+char ByteBuffer::getChar() const {
 	return read<char>();
 }
 
-char ByteBuffer::getChar(uint32_t index) {
+char ByteBuffer::getChar(uint32_t index) const {
 	return read<char>(index);
 }
 
-double ByteBuffer::getDouble() {
+double ByteBuffer::getDouble() const {
 	return read<double>();
 }
 
-double ByteBuffer::getDouble(uint32_t index) {
+double ByteBuffer::getDouble(uint32_t index) const {
 	return read<double>(index);
 }
 
-float ByteBuffer::getFloat() {
+float ByteBuffer::getFloat() const {
 	return read<float>();
 }
 
-float ByteBuffer::getFloat(uint32_t index) {
+float ByteBuffer::getFloat(uint32_t index) const {
 	return read<float>(index);
 }
 
-uint32_t ByteBuffer::getInt() {
+uint32_t ByteBuffer::getInt() const {
 	return read<uint32_t>();
 }
 
-uint32_t ByteBuffer::getInt(uint32_t index) {
+uint32_t ByteBuffer::getInt(uint32_t index) const {
 	return read<uint32_t>(index);
 }
 
-uint64_t ByteBuffer::getLong() {
+uint64_t ByteBuffer::getLong() const {
 	return read<uint64_t>();
 }
 
-uint64_t ByteBuffer::getLong(uint32_t index) {
+uint64_t ByteBuffer::getLong(uint32_t index) const {
 	return read<uint64_t>(index);
 }
 
-uint16_t ByteBuffer::getShort() {
+uint16_t ByteBuffer::getShort() const {
 	return read<uint16_t>();
 }
 
-uint16_t ByteBuffer::getShort(uint32_t index) {
+uint16_t ByteBuffer::getShort(uint32_t index) const {
 	return read<uint16_t>(index);
 }
 
@@ -381,6 +376,8 @@ void ByteBuffer::printPosition() {
 	        << wpos << std::endl;
 }
 
+#ifdef BB_USE_NS
 }
+#endif
 
 #endif

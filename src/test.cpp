@@ -21,9 +21,11 @@
 #include <string>
 #include <memory>
 
-#include "ByteBuffer.h"
+#include "ByteBuffer.hpp"
 
+#ifdef BB_USE_NS
 using namespace bb;
+#endif
 
 int32_t main() {
 	auto bb1 = std::make_unique<ByteBuffer>(30);
