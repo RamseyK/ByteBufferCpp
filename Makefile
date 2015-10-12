@@ -1,7 +1,7 @@
 # Makefile for ByteBuffer and accompanying test programs
 # (C) Ramsey Kant 2011-2013
 
-CC = g++ -std=c++0x
+CC = g++ -std=c++1y
 # Debug Flags
 DEBUGFLAGS = -g -O0 -fpermissive -Wall
 # Production Flags
