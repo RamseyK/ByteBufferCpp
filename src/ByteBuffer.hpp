@@ -22,7 +22,7 @@
 #define _ByteBuffer_H_
 
 // Default number of uint8_ts to allocate in the backing buffer if no size is provided
-#define DEFAULT_SIZE 4096
+#define BB_DEFAULT_SIZE 4096
 
 // If defined, utility functions within the class are enabled
 #define BB_UTILITY
@@ -48,7 +48,7 @@ namespace bb {
 
 class ByteBuffer {
 public:
-	ByteBuffer(uint32_t size = DEFAULT_SIZE);
+	ByteBuffer(uint32_t size = BB_DEFAULT_SIZE);
 	ByteBuffer(uint8_t* arr, uint32_t size);
 	~ByteBuffer() = default;
 
