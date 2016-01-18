@@ -1,13 +1,3 @@
-Changes in this fork:
-
-- C++14 required
-- Adds ByteBuffer to bb namespace
-- Marking some functions const
-- Changes clone() to return unique_ptr
-- CMake support
-
------
-
 ByteBufferCpp
 Ramsey Kant
 
@@ -25,6 +15,8 @@ Why Byte Buffer?
 
 Example usage scenarios
 -HTTP: Request & Response parsers
--Packets: Parse or Create custom packets to send over the network in a quick and easy manner 
+-Packets: Parse or Create custom packets to send over the network in a quick and easy manner
 
 Looking for ByteBuffer in C? Try https://github.com/RamseyK/ByteBufferC
+
+17 January 2016: Additions from upstream fork by Ashley Davis (SgtCoDFish)
