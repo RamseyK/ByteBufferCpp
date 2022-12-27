@@ -183,8 +183,9 @@ private:
 	}
 
 	template<typename T> void insert(T data, uint32_t index) {
-		if ((index + sizeof(data)) > size())
-			return;
+		if ((index + sizeof(data)) > size()) {
+			buf.resize(size() + (index + sizeof(data)));
+		}
 
 		memcpy(&buf[index], (uint8_t*) &data, sizeof(data));
 		wpos = index + sizeof(data);

@@ -65,5 +65,13 @@ int32_t main() {
 	bb2->printHex();
 	bb2->printAscii();
 
+	auto bb3 = std::make_unique<ByteBuffer>(12);
+	printf("bb3 size=%i\n", bb3->size());
+	bb3->put('a', 16);
+	bb3->printPosition();
+	bb3->printHex();
+	bb3->printAscii();
+	printf("bb3 size=%i\n", bb3->size());
+
 	return 0;
 }
