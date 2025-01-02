@@ -45,20 +45,20 @@ void HTTPResponse::init() {
  * responses with different kinds of strings
 */
 void HTTPResponse::determineStatusCode() {
-	if(reason.find("Continue") != std::string::npos) {
-		status = Status(CONTINUE);
-	} else if(reason.find("OK") != std::string::npos) {
-		status = Status(OK);
-	} else if(reason.find("Bad Request") != std::string::npos) {
-		status = Status(BAD_REQUEST);
-	} else if(reason.find("Not Found") != std::string::npos) {
-		status = Status(NOT_FOUND);
-	} else if(reason.find("Server Error") != std::string::npos) {
-		status = Status(SERVER_ERROR);
-	} else if(reason.find("Not Implemented") != std::string::npos) {
-		status = Status(NOT_IMPLEMENTED);
-	} else {
-	}
+    if(reason.find("Continue") != std::string::npos) {
+        status = Status(CONTINUE);
+    } else if(reason.find("OK") != std::string::npos) {
+        status = Status(OK);
+    } else if(reason.find("Bad Request") != std::string::npos) {
+        status = Status(BAD_REQUEST);
+    } else if(reason.find("Not Found") != std::string::npos) {
+        status = Status(NOT_FOUND);
+    } else if(reason.find("Server Error") != std::string::npos) {
+        status = Status(SERVER_ERROR);
+    } else if(reason.find("Not Implemented") != std::string::npos) {
+        status = Status(NOT_IMPLEMENTED);
+    } else {
+    }
 }
 
 /**
@@ -73,8 +73,8 @@ void HTTPResponse::determineReasonStr() {
             reason = "OK";
             break;
         case Status(BAD_REQUEST):
-        	reason = "Bad Request";
-        	break;
+            reason = "Bad Request";
+            break;
         case Status(NOT_FOUND):
             reason = "Not Found";
             break;
@@ -97,11 +97,11 @@ void HTTPResponse::determineReasonStr() {
  */
 uint8_t* HTTPResponse::create() {
     // Clear the bytebuffer in the event this isn't the first call of create()
-	clear();
-	
+    clear();
+    
     // Insert the status line: <version> <status code> <reason>\r\n
     std::stringstream sline;
-	sline << version << " " << status << " " << reason;
+    sline << version << " " << status << " " << reason;
     putLine(sline.str());
     
     // Put all headers
@@ -113,9 +113,9 @@ uint8_t* HTTPResponse::create() {
     }
     
     // Allocate space for the returned byte array and return it
-	uint8_t* createRetData = new uint8_t[size()];
-	setReadPos(0);
-	getBytes(createRetData, size());
+    uint8_t* createRetData = new uint8_t[size()];
+    setReadPos(0);
+    getBytes(createRetData, size());
     
     return createRetData;
 }
@@ -127,28 +127,28 @@ uint8_t* HTTPResponse::create() {
  * @param True if successful. If false, sets parseErrorStr for reason of failure
  */
 bool HTTPResponse::parse() {
-	std::string statusstr;
-	
-	// Get elements from the status line: <version> <status code> <reason>\r\n
-	version = getStrElement();
-	statusstr = getStrElement();
-	determineStatusCode();
-	reason = getLine(); // Pull till \r\n termination
-	
-	// Validate the HTTP version. If there is a mismatch, discontinue parsing
-	if(strcmp(version.c_str(), HTTP_VERSION) != 0) {
-		parseErrorStr = "Supported HTTP version does not match";
-		return false;
-	}
-	
-	// Parse and populate the headers map using the parseHeaders helper
-	parseHeaders();
-	
-	// If the body of the message
-	if(!parseBody())
-		return false;
-	
-	return true;
+    std::string statusstr;
+    
+    // Get elements from the status line: <version> <status code> <reason>\r\n
+    version = getStrElement();
+    statusstr = getStrElement();
+    determineStatusCode();
+    reason = getLine(); // Pull till \r\n termination
+    
+    // Validate the HTTP version. If there is a mismatch, discontinue parsing
+    if(strcmp(version.c_str(), HTTP_VERSION) != 0) {
+        parseErrorStr = "Supported HTTP version does not match";
+        return false;
+    }
+    
+    // Parse and populate the headers map using the parseHeaders helper
+    parseHeaders();
+    
+    // If the body of the message
+    if(!parseBody())
+        return false;
+    
+    return true;
 }
 
 
