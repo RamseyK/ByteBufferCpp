@@ -203,7 +203,8 @@ bool HTTPMessage::parseBody() {
     }
 
     // Create a big enough buffer to store the data
-    uint32_t dIdx = 0, s = size();
+    uint32_t dIdx = 0;
+    uint32_t s = size();
     data = new uint8_t[dataLen];
 
     // Grab all the bytes from the current position to the end
