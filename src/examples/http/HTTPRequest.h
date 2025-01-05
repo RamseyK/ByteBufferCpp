@@ -1,14 +1,14 @@
 /**
  ByteBuffer
  HTTPRequest.h
- Copyright 2011 Ramsey Kant
- 
+ Copyright 2011-2025 Ramsey Kant
+
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
- 
+
  http://www.apache.org/licenses/LICENSE-2.0
- 
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,43 +21,39 @@
 
 #include "HTTPMessage.h"
 
-class HTTPRequest : public HTTPMessage {
+class HTTPRequest final : public HTTPMessage {
 private:
-    int32_t method;
-    std::string requestUri;
-    
-protected:
-    virtual void init();
-    
+    int32_t method = 0;
+    std::string requestUri = "";
+
 public:
     HTTPRequest();
-    HTTPRequest(std::string sData);
-    HTTPRequest(uint8_t *pData, uint32_t len);
-    virtual ~HTTPRequest();
-    
-    virtual uint8_t *create();
-    virtual bool parse();
+    explicit HTTPRequest(std::string const& sData);
+    explicit HTTPRequest(const uint8_t* pData, uint32_t len);
+    ~HTTPRequest() override = default;
 
-	// Helper functions
+    uint8_t* create() override;
+    bool parse() override;
 
-	int32_t methodStrToInt(std::string name);
-    std::string methodIntToStr(uint32_t mid);
-    
+    // Helper functions
+
+    int32_t methodStrToInt(std::string_view name) const;
+    std::string methodIntToStr(int32_t mid) const;
+
     // Info getters  & setters
-    
     void setMethod(int32_t m) {
         method = m;
     }
-    
-    int32_t getMethod() {
+
+    int32_t getMethod() const {
         return method;
     }
-    
-    void setRequestUri(std::string u) {
+
+    void setRequestUri(std::string_view u) {
         requestUri = u;
     }
-    
-    std::string getRequestUri() {
+
+    std::string getRequestUri() const {
         return requestUri;
     }
 };

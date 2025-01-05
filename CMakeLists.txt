@@ -3,9 +3,9 @@ set (CMAKE_LEGACY_CYGWIN32 0)
 
 project (ByteBufferCpp)
 
-set (VERSION_MAJOR 1)
+set (VERSION_MAJOR 2)
 set (VERSION_MINOR 0)
-set (VERSION_PATCH "0-sgtcodfish")
+set (VERSION_PATCH 0)
 
 set (VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
@@ -16,7 +16,7 @@ set (ByteBufferCpp_TEST_SOURCES ${PROJECT_SOURCE_DIR}/src/test.cpp)
 
 option (EXCLUDE_TEST "Ignore the test file" ON)
 
-set (CMAKE_CXX_COMPILER_ARG1 "-std=c++1y")
+set (CMAKE_CXX_COMPILER_ARG1 "-std=c++23")
 set (CMAKE_CXX_FLAGS_BASE "-Wall -Wextra")
 
 set (BB_DEBUG_FLAGS "-g3 -O0")

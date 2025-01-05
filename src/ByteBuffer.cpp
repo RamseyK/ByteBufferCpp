@@ -1,7 +1,7 @@
 /**
  ByteBuffer
  ByteBuffer.cpp
- Copyright 2011 - 2013 Ramsey Kant
+ Copyright 2011-2025 Ramsey Kant
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 
- Modfied 2015 by Ashley Davis (SgtCoDFish)
+ Modified 2015 by Ashley Davis (SgtCoDFish)
  */
 
 #include "ByteBuffer.hpp"
@@ -28,26 +28,23 @@ namespace bb {
  * ByteBuffer constructor
  * Reserves specified size in internal vector
  *
- * @param size Size (in bytes) of space to preallocate internally. Default is set in DEFAULT_SIZE
+ * @param size Size (in bytes) of space to preallocate internally. Default is set in BB_DEFAULT_SIZE
  */
 ByteBuffer::ByteBuffer(uint32_t size) {
     buf.reserve(size);
     clear();
-#ifdef BB_UTILITY
-    name = "";
-#endif
 }
 
 /**
  * ByteBuffer constructor
- * Consume an entire uint8_t array of length len in the ByteBuffer
+ * Consume an entire byte array of length len in the ByteBuffer
  *
- * @param arr uint8_t array of data (should be of length len)
+ * @param arr byte array of data (should be of length len)
  * @param size Size of space to allocate
  */
-ByteBuffer::ByteBuffer(uint8_t* arr, uint32_t size) {
+ByteBuffer::ByteBuffer(const uint8_t* arr, uint32_t size) {
     // If the provided array is NULL, allocate a blank buffer of the provided size
-    if (arr == NULL) {
+    if (arr == nullptr) {
         buf.reserve(size);
         clear();
     } else { // Consume the provided array
@@ -55,10 +52,6 @@ ByteBuffer::ByteBuffer(uint8_t* arr, uint32_t size) {
         clear();
         putBytes(arr, size);
     }
-
-#ifdef BB_UTILITY
-    name = "";
-#endif
 }
 
 /**
@@ -67,7 +60,7 @@ ByteBuffer::ByteBuffer(uint8_t* arr, uint32_t size) {
  *
  * @return Number of bytes from rpos to the end (size())
  */
-uint32_t ByteBuffer::bytesRemaining() {
+uint32_t ByteBuffer::bytesRemaining() const {
     return size() - rpos;
 }
 
@@ -88,11 +81,11 @@ void ByteBuffer::clear() {
  * @return A pointer to the newly cloned ByteBuffer. NULL if no more memory available
  */
 std::unique_ptr<ByteBuffer> ByteBuffer::clone() {
-    std::unique_ptr<ByteBuffer> ret = std::make_unique<ByteBuffer>(buf.size());
+    auto ret = std::make_unique<ByteBuffer>(buf.size());
 
     // Copy data
     for (uint32_t i = 0; i < buf.size(); i++) {
-        ret->put((uint8_t) get(i));
+        ret->put(get(i));
     }
 
     // Reset positions
@@ -109,7 +102,7 @@ std::unique_ptr<ByteBuffer> ByteBuffer::clone() {
  * @param other A pointer to a ByteBuffer to compare to this one
  * @return True if the internal buffers match. False if otherwise
  */
-bool ByteBuffer::equals(ByteBuffer* other) {
+bool ByteBuffer::equals(const ByteBuffer* other) const {
     // If sizes aren't equal, they can't be equal
     if (size() != other->size())
         return false;
@@ -117,7 +110,7 @@ bool ByteBuffer::equals(ByteBuffer* other) {
     // Compare byte by byte
     uint32_t len = size();
     for (uint32_t i = 0; i < len; i++) {
-        if ((uint8_t) get(i) != (uint8_t) other->get(i))
+        if (get(i) != other->get(i))
             return false;
     }
 
@@ -142,7 +135,7 @@ void ByteBuffer::resize(uint32_t newSize) {
  *
  * @return size of the internal buffer
  */
-uint32_t ByteBuffer::size() {
+uint32_t ByteBuffer::size() const {
     return buf.size();
 }
 
@@ -150,14 +143,14 @@ uint32_t ByteBuffer::size() {
 
 /**
  * Replace
- * Replace occurance of a particular uint8_t, key, with the uint8_t rep
+ * Replace occurrence of a particular byte, key, with the byte rep
  *
- * @param key uint8_t to find for replacement
- * @param rep uint8_t to replace the found key with
+ * @param key Byte to find for replacement
+ * @param rep Byte to replace the found key with
  * @param start Index to start from. By default, start is 0
- * @param firstOccuranceOnly If true, only replace the first occurance of the key. If false, replace all occurances. False by default
+ * @param firstOccurrenceOnly If true, only replace the first occurrence of the key. If false, replace all occurrences. False by default
  */
-void ByteBuffer::replace(uint8_t key, uint8_t rep, uint32_t start, bool firstOccuranceOnly) {
+void ByteBuffer::replace(uint8_t key, uint8_t rep, uint32_t start, bool firstOccurrenceOnly) {
     uint32_t len = buf.size();
     for (uint32_t i = start; i < len; i++) {
         uint8_t data = read<uint8_t>(i);
@@ -168,7 +161,7 @@ void ByteBuffer::replace(uint8_t key, uint8_t rep, uint32_t start, bool firstOcc
         // Key was found in array, perform replacement
         if (data == key) {
             buf[i] = rep;
-            if (firstOccuranceOnly)
+            if (firstOccurrenceOnly)
                 return;
         }
     }
@@ -180,7 +173,7 @@ uint8_t ByteBuffer::peek() const {
     return read<uint8_t>(rpos);
 }
 
-uint8_t ByteBuffer::get() const {
+uint8_t ByteBuffer::get() {
     return read<uint8_t>();
 }
 
@@ -188,13 +181,13 @@ uint8_t ByteBuffer::get(uint32_t index) const {
     return read<uint8_t>(index);
 }
 
-void ByteBuffer::getBytes(uint8_t* buf, uint32_t len) const {
-    for (uint32_t i = 0; i < len; i++) {
-        buf[i] = read<uint8_t>();
+void ByteBuffer::getBytes(uint8_t* const out_buf, uint32_t out_len) {
+    for (uint32_t i = 0; i < out_len; i++) {
+        out_buf[i] = read<uint8_t>();
     }
 }
 
-char ByteBuffer::getChar() const {
+char ByteBuffer::getChar() {
     return read<char>();
 }
 
@@ -202,7 +195,7 @@ char ByteBuffer::getChar(uint32_t index) const {
     return read<char>(index);
 }
 
-double ByteBuffer::getDouble() const {
+double ByteBuffer::getDouble() {
     return read<double>();
 }
 
@@ -210,7 +203,7 @@ double ByteBuffer::getDouble(uint32_t index) const {
     return read<double>(index);
 }
 
-float ByteBuffer::getFloat() const {
+float ByteBuffer::getFloat() {
     return read<float>();
 }
 
@@ -218,7 +211,7 @@ float ByteBuffer::getFloat(uint32_t index) const {
     return read<float>(index);
 }
 
-uint32_t ByteBuffer::getInt() const {
+uint32_t ByteBuffer::getInt() {
     return read<uint32_t>();
 }
 
@@ -226,7 +219,7 @@ uint32_t ByteBuffer::getInt(uint32_t index) const {
     return read<uint32_t>(index);
 }
 
-uint64_t ByteBuffer::getLong() const {
+uint64_t ByteBuffer::getLong() {
     return read<uint64_t>();
 }
 
@@ -234,7 +227,7 @@ uint64_t ByteBuffer::getLong(uint32_t index) const {
     return read<uint64_t>(index);
 }
 
-uint16_t ByteBuffer::getShort() const {
+uint16_t ByteBuffer::getShort() {
     return read<uint16_t>();
 }
 
@@ -242,9 +235,10 @@ uint16_t ByteBuffer::getShort(uint32_t index) const {
     return read<uint16_t>(index);
 }
 
+
 // Write Functions
 
-void ByteBuffer::put(ByteBuffer* src) {
+void ByteBuffer::put(const ByteBuffer* src) {
     uint32_t len = src->size();
     for (uint32_t i = 0; i < len; i++)
         append<uint8_t>(src->get(i));
@@ -258,13 +252,13 @@ void ByteBuffer::put(uint8_t b, uint32_t index) {
     insert<uint8_t>(b, index);
 }
 
-void ByteBuffer::putBytes(uint8_t* b, uint32_t len) {
+void ByteBuffer::putBytes(const uint8_t* b, uint32_t len) {
     // Insert the data one byte at a time into the internal buffer at position i+starting index
     for (uint32_t i = 0; i < len; i++)
         append<uint8_t>(b[i]);
 }
 
-void ByteBuffer::putBytes(uint8_t* b, uint32_t len, uint32_t index) {
+void ByteBuffer::putBytes(const uint8_t* b, uint32_t len, uint32_t index) {
     wpos = index;
 
     // Insert the data one byte at a time into the internal buffer at position i+starting index
@@ -321,58 +315,51 @@ void ByteBuffer::putShort(uint16_t value, uint32_t index) {
 
 // Utility Functions
 #ifdef BB_UTILITY
-void ByteBuffer::setName(std::string n) {
+void ByteBuffer::setName(std::string_view n) {
     name = n;
 }
 
-std::string ByteBuffer::getName() {
+std::string ByteBuffer::getName() const {
     return name;
 }
 
-void ByteBuffer::printInfo() {
+void ByteBuffer::printInfo() const {
     uint32_t length = buf.size();
     std::cout << "ByteBuffer " << name.c_str() << " Length: " << length << ". Info Print" << std::endl;
 }
 
-void ByteBuffer::printAH() {
+void ByteBuffer::printAH() const {
     uint32_t length = buf.size();
     std::cout << "ByteBuffer " << name.c_str() << " Length: " << length << ". ASCII & Hex Print" << std::endl;
-
     for (uint32_t i = 0; i < length; i++) {
         std::printf("0x%02x ", buf[i]);
     }
-
     std::printf("\n");
     for (uint32_t i = 0; i < length; i++) {
         std::printf("%c ", buf[i]);
     }
-
     std::printf("\n");
 }
 
-void ByteBuffer::printAscii() {
+void ByteBuffer::printAscii() const {
     uint32_t length = buf.size();
     std::cout << "ByteBuffer " << name.c_str() << " Length: " << length << ". ASCII Print" << std::endl;
-
     for (uint32_t i = 0; i < length; i++) {
         std::printf("%c ", buf[i]);
     }
-
     std::printf("\n");
 }
 
-void ByteBuffer::printHex() {
+void ByteBuffer::printHex() const {
     uint32_t length = buf.size();
     std::cout << "ByteBuffer " << name.c_str() << " Length: " << length << ". Hex Print" << std::endl;
-
     for (uint32_t i = 0; i < length; i++) {
         std::printf("0x%02x ", buf[i]);
     }
-
     std::printf("\n");
 }
 
-void ByteBuffer::printPosition() {
+void ByteBuffer::printPosition() const {
     uint32_t length = buf.size();
     std::cout << "ByteBuffer " << name.c_str() << " Length: " << length << " Read Pos: " << rpos << ". Write Pos: "
             << wpos << std::endl;
