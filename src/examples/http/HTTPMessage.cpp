@@ -1,5 +1,5 @@
 /**
-    httpserver
+    ByteBuffer
     HTTPMessage.cpp
     Copyright 2011-2025 Ramsey Kant
 
@@ -17,6 +17,10 @@
 */
 
 #include "HTTPMessage.h"
+
+#include <string>
+#include <sstream>
+#include <iostream>
 
 HTTPMessage::HTTPMessage() : ByteBuffer(4096) {
 }
@@ -117,15 +121,20 @@ std::string HTTPMessage::getLine() {
  * @return Token found in the buffer. Empty if delimiter wasn't reached
  */
 std::string HTTPMessage::getStrElement(char delim) {
-    std::string ret = "";
     int32_t startPos = getReadPos();
-    uint32_t size = 0;
+    if (startPos < 0)
+        return "";
+
     int32_t endPos = find(delim, startPos);
+    if (endPos < 0)
+        return "";
+
+    if (startPos > endPos)
+        return "";
 
     // Calculate the size based on the found ending position
-    size = (endPos + 1) - startPos;
-
-    if ((endPos == -1) || (size <= 0))
+    uint32_t size = (endPos + 1) - startPos;
+    if (size <= 0)
         return "";
 
     // Grab the std::string from the ByteBuffer up to the delimiter
@@ -133,7 +142,7 @@ std::string HTTPMessage::getStrElement(char delim) {
     memset(str, 0x00, size);
     getBytes((uint8_t*)str, size);
     str[size - 1] = 0x00; // NULL termination
-    ret.assign(str);
+    std::string ret = str;
 
     // Increment the read position PAST the delimiter
     setReadPos(endPos + 1);
@@ -213,7 +222,7 @@ bool HTTPMessage::parseBody() {
         dIdx++;
     }
 
-    // TODO: Handle chuncked Request/Response parsing (with footers) here
+    // We could handle chunked Request/Response parsing (with footers) here, but, we won't.
 
     return true;
 }
@@ -225,23 +234,37 @@ bool HTTPMessage::parseBody() {
  * @param string containing formatted header: value
  */
 void HTTPMessage::addHeader(std::string const& line) {
-    std::string key = "";
-    std::string value = "";
-    size_t kpos;
-    int32_t i = 0;
-    kpos = line.find(':');
+    size_t kpos = line.find(':');
     if (kpos == std::string::npos) {
-        std::cout << "Could not addHeader: " << line.c_str() << std::endl;
+        std::cout << "Could not addHeader: " << line << std::endl;
         return;
     }
-    key = line.substr(0, kpos);
-    value = line.substr(kpos + 1, line.size() - kpos - 1);
+    // We're choosing to reject HTTP Header keys longer than 32 characters
+    if (kpos > 32)
+        return;
+
+    std::string key = line.substr(0, kpos);
+    if (key.empty())
+        return;
+
+    int32_t value_len = line.size() - kpos - 1;
+    if (value_len <= 0)
+        return;
+
+    // We're choosing to reject HTTP header values longer than 4kb
+    if (value_len > 4096)
+        return;
+
+    std::string value = line.substr(kpos + 1, value_len);
 
     // Skip all leading spaces in the value
+    int32_t i = 0;
     while (i < value.size() && value.at(i) == 0x20) {
         i++;
     }
     value = value.substr(i, value.size());
+    if (value.empty())
+        return;
 
     // Add header to the map
     addHeader(key, value);
@@ -278,7 +301,7 @@ void HTTPMessage::addHeader(std::string const& key, int32_t value) {
  */
 std::string HTTPMessage::getHeaderValue(std::string const& key) const {
 
-    char c;
+    char c = 0;
     std::string key_lower = "";
 
     // Lookup in map
@@ -287,7 +310,7 @@ std::string HTTPMessage::getHeaderValue(std::string const& key) const {
     // Key wasn't found, try an all lowercase variant as some clients won't always use proper capitalization
     if (it == headers.end()) {
 
-        for (int i = 0; i < key.length(); i++) {
+        for (uint32_t i = 0; i < key.length(); i++) {
             c = key.at(i);
             key_lower += tolower(c);
         }

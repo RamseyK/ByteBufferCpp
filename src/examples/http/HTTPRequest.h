@@ -23,7 +23,7 @@
 
 class HTTPRequest final : public HTTPMessage {
 private:
-    int32_t method = 0;
+    uint32_t method = 0;
     std::string requestUri = "";
 
 public:
@@ -37,15 +37,15 @@ public:
 
     // Helper functions
 
-    int32_t methodStrToInt(std::string_view name) const;
-    std::string methodIntToStr(int32_t mid) const;
+    uint32_t methodStrToInt(std::string_view name) const;
+    std::string methodIntToStr(uint32_t mid) const;
 
     // Info getters  & setters
-    void setMethod(int32_t m) {
+    void setMethod(uint32_t m) {
         method = m;
     }
 
-    int32_t getMethod() const {
+    uint32_t getMethod() const {
         return method;
     }
 

@@ -65,7 +65,7 @@
     <ClCompile Include="..\src\test.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\ByteBuffer.h" />
+    <ClInclude Include="..\src\ByteBuffer.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

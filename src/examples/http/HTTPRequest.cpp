@@ -19,6 +19,8 @@
 #include "HTTPMessage.h"
 #include "HTTPRequest.h"
 
+#include <iostream>
+
 HTTPRequest::HTTPRequest() : HTTPMessage() {
 }
 
@@ -33,15 +35,15 @@ HTTPRequest::HTTPRequest(const uint8_t* pData, uint32_t len) : HTTPMessage(pData
  * id detailed in the Method enum
  *
  * @param name String representation of the Method
- * @return Corresponding Method ID, -1 if unable to find the method
+ * @return Corresponding Method ID, INVALID_METHOD if unable to find the method
  */
-int32_t HTTPRequest::methodStrToInt(std::string_view name) const {
+uint32_t HTTPRequest::methodStrToInt(std::string_view name) const {
     // Method name cannot must be between 1 and 10 characters. Anything outside those bounds shouldn't be compared at all
     if (name.empty() || (name.size() >= 10))
-        return -1;
+        return INVALID_METHOD;
 
     // Loop through requestMethodStr array and attempt to match the 'name' with a known method in the array
-    int32_t ret = -1;
+    uint32_t ret = INVALID_METHOD;
     for (uint32_t i = 0; i < NUM_METHODS; i++) {
         if (name.compare(requestMethodStr[i]) == 0) {
             ret = i;
@@ -56,7 +58,7 @@ int32_t HTTPRequest::methodStrToInt(std::string_view name) const {
  * @param mid Method ID to lookup
  * @return The method name in the from of a std::string. Blank if unable to find the method
  */
-std::string HTTPRequest::methodIntToStr(int32_t mid) const {
+std::string HTTPRequest::methodIntToStr(uint32_t mid) const {
     // ID is out of bounds of the possible requestMethodStr indexes
     if (mid >= NUM_METHODS)
         return "";
@@ -107,18 +109,34 @@ uint8_t* HTTPRequest::create() {
  * @param True if successful. If false, sets parseErrorStr for reason of failure
  */
 bool HTTPRequest::parse() {
-    std::string initial = "";
-    std::string methodName = "";
-
     // Get elements from the initial line: <method> <path> <version>\r\n
-    methodName = getStrElement();
-    requestUri = getStrElement();
-    version = getLine(); // End of the line, pull till \r\n
+    std::string methodName = getStrElement();
+    if (methodName.empty()) {
+        parseErrorStr = "Empty method";
+        return false;
+    }
 
     // Convert the name to the internal enumeration number
     method = methodStrToInt(methodName);
-    if (method == -1) {
-        parseErrorStr = "Invalid Method: " + methodName;
+    if (method == INVALID_METHOD) {
+        parseErrorStr = "Invalid Method";
+        return false;
+    }
+
+    requestUri = getStrElement();
+    if (requestUri.empty()) {
+        parseErrorStr = "No request URI";
+        return false;
+    }
+
+    version = getLine(); // End of the line, pull till \r\n
+    if (version.empty()) {
+        parseErrorStr = "HTTP version string was empty";
+        return false;
+    }
+
+    if (!version.starts_with("HTTP/1")) {
+        parseErrorStr = "HTTP version was invalid";
         return false;
     }
 

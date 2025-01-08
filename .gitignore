@@ -4,3 +4,5 @@
 .settings
 build/*
 build
+._*
+.DS_Store*
