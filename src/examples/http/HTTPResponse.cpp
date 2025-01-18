@@ -19,7 +19,7 @@
 #include "HTTPMessage.h"
 #include "HTTPResponse.h"
 
-#include <sstream>
+#include <format>
 #include <string>
 
 HTTPResponse::HTTPResponse() : HTTPMessage() {
@@ -94,9 +94,7 @@ uint8_t* HTTPResponse::create() {
     clear();
 
     // Insert the status line: <version> <status code> <reason>\r\n
-    std::stringstream sline;
-    sline << version << " " << status << " " << reason;
-    putLine(sline.str());
+    putLine(std::format("{} {} {}", version, status, reason));
 
     // Put all headers
     putHeaders();

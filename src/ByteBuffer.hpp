@@ -18,11 +18,8 @@
  Modified 2015 by Ashley Davis (SgtCoDFish)
  */
 
-#ifndef _ByteBuffer_H_
-#define _ByteBuffer_H_
-
-// If defined, utility functions within the class are enabled
-#define BB_UTILITY
+#ifndef _BYTEBUFFER_H_
+#define _BYTEBUFFER_H_
 
 #include <cstdint>
 #include <vector>

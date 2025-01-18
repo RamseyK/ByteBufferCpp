@@ -82,7 +82,7 @@ class HTTPMessage : public ByteBuffer {
 private:
     std::map<std::string, std::string> headers;
 
-protected:
+public:
     std::string parseErrorStr = "";
 
     std::string version = DEFAULT_HTTP_VERSION; // By default, all create() will indicate the version is whatever DEFAULT_HTTP_VERSION is

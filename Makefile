@@ -7,7 +7,7 @@ DEBUGFLAGS = -g -O0
 # Production Flags
 PRODFLAGS = -O3
 
-CXXFLAGS = -std=c++23 -Wall -Wextra -Wno-sign-compare -Wno-missing-field-initializers -pedantic $(DEBUGFLAGS)
+CXXFLAGS = -DBB_UTILITY=1 -std=c++23 -Wall -Wextra -Wno-sign-compare -Wno-missing-field-initializers -pedantic $(DEBUGFLAGS)
 
 TEST_H   = src/ByteBuffer.hpp
 TEST_SRC = src/ByteBuffer.cpp src/test.cpp

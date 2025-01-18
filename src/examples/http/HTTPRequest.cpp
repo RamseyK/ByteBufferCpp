@@ -20,6 +20,7 @@
 #include "HTTPRequest.h"
 
 #include <iostream>
+#include <format>
 
 HTTPRequest::HTTPRequest() : HTTPMessage() {
 }
@@ -84,7 +85,7 @@ uint8_t* HTTPRequest::create() {
         std::cout << "Could not create HTTPRequest, unknown method id: " << method << std::endl;
         return nullptr;
     }
-    putLine(mstr + " " + requestUri + " " + version);
+    putLine(std::format("{} {} {}", mstr, requestUri, version));
 
     // Put all headers
     putHeaders();
@@ -95,9 +96,10 @@ uint8_t* HTTPRequest::create() {
     }
 
     // Allocate space for the returned byte array and return it
-    auto createRetData = new uint8_t[size()];
+    auto sz = size();
+    auto createRetData = new uint8_t[sz];
     setReadPos(0);
-    getBytes(createRetData, size());
+    getBytes(createRetData, sz);
 
     return createRetData;
 }

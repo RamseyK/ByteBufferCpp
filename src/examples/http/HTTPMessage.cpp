@@ -19,7 +19,7 @@
 #include "HTTPMessage.h"
 
 #include <string>
-#include <sstream>
+#include <format>
 #include <iostream>
 
 HTTPMessage::HTTPMessage() : ByteBuffer(4096) {
@@ -55,8 +55,7 @@ void HTTPMessage::putLine(std::string str, bool crlf_end) {
  */
 void HTTPMessage::putHeaders() {
     for (auto const &[key, value] : headers) {
-        std::string hdrstr = std::format("{}: {}", key, value);
-        putLine(hdrstr, true);
+        putLine(std::format("{}: {}", key, value), true);
     }
 
     // End with a blank line
@@ -202,9 +201,7 @@ bool HTTPMessage::parseBody() {
         // dataLen = bytesRemaining();
 
         // If it exceeds, there's a potential security issue and we can't reliably parse
-        std::stringstream pes;
-        pes << "Content-Length (" << hlenstr << ") is greater than remaining bytes (" << bytesRemaining() << ")";
-        parseErrorStr = pes.str();
+        parseErrorStr = std::format("Content-Length ({}) is greater than remaining bytes ({})", hlenstr, bytesRemaining());
         return false;
     } else {
         // Otherwise, we ca probably trust Content-Length is valid and read the specificed number of bytes
@@ -288,9 +285,7 @@ void HTTPMessage::addHeader(std::string const& key, std::string const& value) {
  * @param value Integer representation of the Header value
  */
 void HTTPMessage::addHeader(std::string const& key, int32_t value) {
-    std::stringstream sz;
-    sz << value;
-    headers.try_emplace(key, sz.str());
+    headers.try_emplace(key, std::format("{}", value));
 }
 
 /**

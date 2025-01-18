@@ -21,6 +21,7 @@
 #include "ByteBuffer.hpp"
 
 #ifdef BB_UTILITY
+#include <iomanip>
 #include <iostream>
 #include <string>
 #endif
@@ -337,31 +338,31 @@ void ByteBuffer::printAH() const {
     uint32_t length = buf.size();
     std::cout << "ByteBuffer " << name << " Length: " << length << ". ASCII & Hex Print" << std::endl;
     for (uint32_t i = 0; i < length; i++) {
-        std::printf("0x%02x ", buf[i]);
+        std::cout << "0x" << std::setw(2) << std::setfill('0') << std::hex << int(buf[i]) << " ";
     }
     std::printf("\n");
     for (uint32_t i = 0; i < length; i++) {
-        std::printf("%c ", buf[i]);
+        std::cout << (char)buf[i] << " ";
     }
-    std::printf("\n");
+    std::cout << std::endl;
 }
 
 void ByteBuffer::printAscii() const {
     uint32_t length = buf.size();
     std::cout << "ByteBuffer " << name << " Length: " << length << ". ASCII Print" << std::endl;
     for (uint32_t i = 0; i < length; i++) {
-        std::printf("%c ", buf[i]);
+        std::cout << (char)buf[i] << " ";
     }
-    std::printf("\n");
+    std::cout << std::endl;
 }
 
 void ByteBuffer::printHex() const {
     uint32_t length = buf.size();
     std::cout << "ByteBuffer " << name << " Length: " << length << ". Hex Print" << std::endl;
     for (uint32_t i = 0; i < length; i++) {
-        std::printf("0x%02x ", buf[i]);
+        std::cout << "0x" << std::setw(2) << std::setfill('0') << std::hex << int(buf[i]) << " ";
     }
-    std::printf("\n");
+    std::cout << std::endl;
 }
 
 void ByteBuffer::printPosition() const {
