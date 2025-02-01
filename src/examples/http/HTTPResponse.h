@@ -21,6 +21,8 @@
 
 #include "HTTPMessage.h"
 
+#include <memory>
+
 class HTTPResponse final : public HTTPMessage {
 private:
     // Response variables
@@ -36,7 +38,7 @@ public:
     explicit HTTPResponse(const uint8_t* pData, uint32_t len);
     ~HTTPResponse() override = default;
 
-    uint8_t* create() override;
+    std::unique_ptr<uint8_t[]> create() override;
     bool parse() override;
 
     // Accessors & Mutators

@@ -21,6 +21,8 @@
 
 #include "HTTPMessage.h"
 
+#include <memory>
+
 class HTTPRequest final : public HTTPMessage {
 private:
     uint32_t method = 0;
@@ -32,7 +34,7 @@ public:
     explicit HTTPRequest(const uint8_t* pData, uint32_t len);
     ~HTTPRequest() override = default;
 
-    uint8_t* create() override;
+    std::unique_ptr<uint8_t[]> create() override;
     bool parse() override;
 
     // Helper functions

@@ -258,13 +258,13 @@ void ByteBuffer::put(uint8_t b, uint32_t index) {
     insert<uint8_t>(b, index);
 }
 
-void ByteBuffer::putBytes(const uint8_t* b, uint32_t len) {
+void ByteBuffer::putBytes(const uint8_t* const b, uint32_t len) {
     // Insert the data one byte at a time into the internal buffer at position i+starting index
     for (uint32_t i = 0; i < len; i++)
         append<uint8_t>(b[i]);
 }
 
-void ByteBuffer::putBytes(const uint8_t* b, uint32_t len, uint32_t index) {
+void ByteBuffer::putBytes(const uint8_t* const b, uint32_t len, uint32_t index) {
     wpos = index;
 
     // Insert the data one byte at a time into the internal buffer at position i+starting index

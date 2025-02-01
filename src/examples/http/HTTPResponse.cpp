@@ -21,6 +21,7 @@
 
 #include <format>
 #include <string>
+#include <memory>
 
 HTTPResponse::HTTPResponse() : HTTPMessage() {
 }
@@ -89,7 +90,7 @@ void HTTPResponse::determineReasonStr() {
  *
  * @return Byte array of this HTTPResponse to be sent over the wire
  */
-uint8_t* HTTPResponse::create() {
+std::unique_ptr<uint8_t[]> HTTPResponse::create() {
     // Clear the bytebuffer in the event this isn't the first call of create()
     clear();
 
@@ -105,9 +106,9 @@ uint8_t* HTTPResponse::create() {
     }
 
     // Allocate space for the returned byte array and return it
-    auto createRetData = new uint8_t[size()];
+    auto createRetData = std::make_unique<uint8_t[]>(size());
     setReadPos(0);
-    getBytes(createRetData, size());
+    getBytes(createRetData.get(), size());
 
     return createRetData;
 }

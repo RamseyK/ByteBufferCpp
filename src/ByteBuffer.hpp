@@ -45,7 +45,6 @@ public:
     uint32_t bytesRemaining() const; // Number of bytes from the current read position till the end of the buffer
     void clear(); // Clear our the vector and reset read and write positions
     std::unique_ptr<ByteBuffer> clone(); // Return a new instance of a ByteBuffer with the exact same contents and the same state (rpos, wpos)
-    //ByteBuffer compact(); // TODO?
     bool equals(const ByteBuffer* other) const; // Compare if the contents are equivalent
     void resize(uint32_t newSize);
     uint32_t size() const; // Size of internal vector
@@ -96,8 +95,8 @@ public:
     void put(const ByteBuffer* src); // Relative write of the entire contents of another ByteBuffer (src)
     void put(uint8_t b); // Relative write
     void put(uint8_t b, uint32_t index); // Absolute write at index
-    void putBytes(const uint8_t* b, uint32_t len); // Relative write
-    void putBytes(const uint8_t* b, uint32_t len, uint32_t index); // Absolute write starting at index
+    void putBytes(const uint8_t* const b, uint32_t len); // Relative write
+    void putBytes(const uint8_t* const b, uint32_t len, uint32_t index); // Absolute write starting at index
     void putChar(char value); // Relative
     void putChar(char value, uint32_t index); // Absolute
     void putDouble(double value);

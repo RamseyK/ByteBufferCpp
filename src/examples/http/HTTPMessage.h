@@ -20,6 +20,7 @@
 #define _HTTPMESSAGE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "../../ByteBuffer.hpp"
@@ -80,7 +81,7 @@ enum Status {
 
 class HTTPMessage : public ByteBuffer {
 private:
-    std::map<std::string, std::string> headers;
+    std::map<std::string, std::string, std::less<>> headers;
 
 public:
     std::string parseErrorStr = "";
@@ -97,7 +98,7 @@ public:
     explicit HTTPMessage(const uint8_t* pData, uint32_t len);
     ~HTTPMessage() override = default;
 
-    virtual uint8_t* create() = 0;
+    virtual std::unique_ptr<uint8_t[]> create() = 0;
     virtual bool parse() = 0;
 
     // Create helpers

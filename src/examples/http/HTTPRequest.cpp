@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <format>
+#include <memory>
 
 HTTPRequest::HTTPRequest() : HTTPMessage() {
 }
@@ -74,7 +75,7 @@ std::string HTTPRequest::methodIntToStr(uint32_t mid) const {
  *
  * @return Byte array of this HTTPRequest to be sent over the wire
  */
-uint8_t* HTTPRequest::create() {
+std::unique_ptr<uint8_t[]> HTTPRequest::create() {
     // Clear the bytebuffer in the event this isn't the first call of create()
     clear();
 
@@ -97,9 +98,9 @@ uint8_t* HTTPRequest::create() {
 
     // Allocate space for the returned byte array and return it
     auto sz = size();
-    auto createRetData = new uint8_t[sz];
+    auto createRetData = std::make_unique<uint8_t[]>(sz);
     setReadPos(0);
-    getBytes(createRetData, sz);
+    getBytes(createRetData.get(), sz);
 
     return createRetData;
 }

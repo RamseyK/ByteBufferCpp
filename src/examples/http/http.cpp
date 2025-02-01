@@ -82,7 +82,6 @@ int32_t main() {
     string req2Content = "var=2";
     char req2ContentLen[8];
     snprintf(req2ContentLen, sizeof(req2ContentLen), "%zu", req2Content.size());
-    uint8_t *req2Ret = NULL;
     uint32_t req2Size = 0;
     req2->setMethod(Method(POST));
     req2->setRequestUri("/dir/test.php");
@@ -92,13 +91,13 @@ int32_t main() {
     req2->addHeader("Content-Length", req2ContentLen);
     req2->addHeader("Multi-Test", "line1,\r\nline2,\r\nline3");
     req2->setData((uint8_t*)req2Content.c_str(), req2Content.size());
-    req2Ret = req2->create();
+    auto req2Ret = req2->create();
     req2Size = req2->size();
     printf("\n\n");
     
     // Have req3 take the entire data from req2 and parse it
     printf("Parsing req2 with req3:\n");
-    req3 = new HTTPRequest(req2Ret, req2Size);
+    req3 = new HTTPRequest(req2Ret.get(), req2Size);
     if(!req3->parse()) {
         printf("req3 parse error: %s\n", req3->getParseError().c_str());
         testFailed = true;
