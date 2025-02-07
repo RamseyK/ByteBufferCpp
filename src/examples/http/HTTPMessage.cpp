@@ -203,6 +203,9 @@ bool HTTPMessage::parseBody() {
         // If it exceeds, there's a potential security issue and we can't reliably parse
         parseErrorStr = std::format("Content-Length ({}) is greater than remaining bytes ({})", hlenstr, bytesRemaining());
         return false;
+    } else if (contentLen == 0) {
+        parseErrorStr = "Content-Length is zero";
+        return false;
     } else {
         // Otherwise, we ca probably trust Content-Length is valid and read the specificed number of bytes
         dataLen = contentLen;
@@ -211,6 +214,11 @@ bool HTTPMessage::parseBody() {
     // Create a big enough buffer to store the data
     uint32_t dIdx = 0;
     uint32_t s = size();
+    if (s > dataLen) {
+        parseErrorStr = std::format("ByteBuffer size of {} is greater than dataLen {}", s, dataLen);
+        return false;
+    }
+
     data = new uint8_t[dataLen];
 
     // Grab all the bytes from the current position to the end
