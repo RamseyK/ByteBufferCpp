@@ -43,11 +43,17 @@ int32_t main() {
     bb1->printHex();
     bb1->printPosition();
 
-    int32_t f0 = -1, f1 = -1, f2 = -1;
+    int32_t f0 = -1;
+    int32_t f1 = -1;
+    int32_t f2 = -1;
     f0 = bb1->find((uint16_t) 0xBEBA);
     f1 = bb1->find((uint8_t) 0xBA);
 
-    uint8_t t1 = 0, t2 = 0, t3 = 0, t4 = 0, t5 = 1;
+    uint8_t t1 = 0;
+    uint8_t t2 = 0;
+    uint8_t t3 = 0;
+    uint8_t t4 = 0;
+    uint8_t t5 = 1;
     t1 = bb1->get();
     t2 = bb1->get();
     t3 = bb1->get();
