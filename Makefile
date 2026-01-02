@@ -3,7 +3,7 @@
 
 CXX = clang++
 # Debug Flags
-DEBUGFLAGS = -g -O0 
+DEBUGFLAGS = -g -O1 -fsanitize=address
 # Production Flags
 PRODFLAGS = -O3
 

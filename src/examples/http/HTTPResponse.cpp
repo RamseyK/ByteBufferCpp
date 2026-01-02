@@ -101,8 +101,8 @@ std::unique_ptr<uint8_t[]> HTTPResponse::create() {
     putHeaders();
 
     // If theres body data, add it now
-    if ((data != nullptr) && dataLen > 0) {
-        putBytes(data, dataLen);
+    if ((this->data != nullptr) && this->dataLen > 0) {
+        putBytes(this->data, this->dataLen);
     }
 
     // Allocate space for the returned byte array and return it

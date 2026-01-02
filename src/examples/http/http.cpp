@@ -43,22 +43,22 @@ int32_t main() {
     string l3 = "";
     string l4 = "";
     l1 = msg->getLine(); // Expected: line1
-    if(strcmp(l1.c_str(), "line1") != 0) {
+    if (strcmp(l1.c_str(), "line1") != 0) {
         printf("l1 mismatch. Got: %s. Expected: line1\n", l1.c_str());
         testFailed = true;
     }
     l2 = msg->getLine(); // Expected: line2
-    if(strcmp(l2.c_str(), "line2") != 0) {
+    if (strcmp(l2.c_str(), "line2") != 0) {
         printf("l2 mismatch. Got: %s. Expected: line2\n", l2.c_str());
         testFailed = true;
     }
     l3 = msg->getLine(); // Expected: 
-    if(!l3.empty()) {
+    if (!l3.empty()) {
         printf("l3 mismatch. Got: %s. Expected to be blank\n", l3.c_str());
         testFailed = true;
     }
     l4 = msg->getLine(); // Expected: 
-    if(!l4.empty()) {
+    if (!l4.empty()) {
         printf("l4 mismatch. Got: %s. Expected to be blank\n", l4.c_str());
         testFailed = true;
     }
@@ -66,18 +66,18 @@ int32_t main() {
     printf("%s (%u)\n%s (%u)\n%s (%u)\n%s (%u)\n\n", l1.c_str(), (unsigned int)l1.size(), l2.c_str(), (unsigned int)l2.size(), l3.c_str(), (unsigned int)l3.size(), l4.c_str(), (unsigned int)l4.size());
 
     // Test HTTPRequest parse()
-    if(!req->parse()) {
+    if (!req->parse()) {
         printf("HTTPRequest (req) had a parse error: %s\n", req->getParseError().c_str());
         testFailed = true;
     } else {
         printf("HTTPRequest(req): %i %s\n", req->getMethod(), req->getVersion().c_str());
         uint8_t *data = req->getData();
         printf("Data (%i):\n", req->getDataLength());
-        for(uint32_t i = 0; i < req->getDataLength(); i++) {
+        for (uint32_t i = 0; i < req->getDataLength(); i++) {
             printf("0x%02x ", data[i]);
         }
         printf("\n");
-        for(uint32_t i = 0;i < req->getDataLength(); i++) {
+        for (uint32_t i = 0;i < req->getDataLength(); i++) {
             printf("%c", data[i]);
         }
         printf("\n");
@@ -103,23 +103,23 @@ int32_t main() {
     // Have req3 take the entire data from req2 and parse it
     printf("Parsing req2 with req3:\n");
     auto req3 = std::make_unique<HTTPRequest>(req2Ret.get(), req2Size);
-    if(!req3->parse()) {
+    if (!req3->parse()) {
         printf("req3 parse error: %s\n", req3->getParseError().c_str());
         testFailed = true;
     } else {
         string req3Header = req3->methodIntToStr(req3->getMethod()) + " " + req3->getRequestUri() + " " + req3->getVersion();
         printf("HTTPResponse(res3): %s\n", req3Header.c_str());
         printf("req3 headers (%i):\n", req3->getNumHeaders());
-        for(int32_t i = 0; i < req3->getNumHeaders(); i++) {
+        for (int32_t i = 0; i < req3->getNumHeaders(); i++) {
             printf("%s\n", req3->getHeaderStr(i).c_str());
         }
         printf("req3 data(%i):\n", req3->getDataLength());
         uint8_t *req3Data = req3->getData();
-        for(uint32_t i = 0; i < req3->getDataLength(); i++) {
+        for (uint32_t i = 0; i < req3->getDataLength(); i++) {
             printf("0x%02x ", req3Data[i]);
         }
         printf("\n");
-        for(uint32_t i = 0;i < req3->getDataLength(); i++) {
+        for (uint32_t i = 0;i < req3->getDataLength(); i++) {
             printf("%c", req3Data[i]);
         }
         printf("\n\n");
@@ -127,28 +127,28 @@ int32_t main() {
     
     // Test HTTPResponse(res) parse()
     
-    if(!res->parse()) {
+    if (!res->parse()) {
         printf("res parse error: %s\n", res->getParseError().c_str());
         testFailed = true;
     } else {
         printf("HTTPResponse(res): %s %s\n", res->getVersion().c_str(), res->getReason().c_str());
         printf("res headers (%i):\n", res->getNumHeaders());
-        for(int32_t i = 0; i < res->getNumHeaders(); i++) {
+        for (int32_t i = 0; i < res->getNumHeaders(); i++) {
             printf("%s\n", res->getHeaderStr(i).c_str());
         }
         printf("res data(%i):\n", res->getDataLength());
         uint8_t *resData = res->getData();
-        for(uint32_t i = 0; i < res->getDataLength(); i++) {
+        for (uint32_t i = 0; i < res->getDataLength(); i++) {
             printf("0x%02x ", resData[i]);
         }
         printf("\n");
-        for(uint32_t i = 0;i < res->getDataLength(); i++) {
+        for (uint32_t i = 0;i < res->getDataLength(); i++) {
             printf("%c", resData[i]);
         }
         printf("\n\n");
     }
 
-    if(testFailed) {
+    if (testFailed) {
         printf("TEST PROGRAM FAILED: Read through output carefully to find point32_t of failure\n");
     } else {
         printf("TEST PROGRAM PASSED\n");

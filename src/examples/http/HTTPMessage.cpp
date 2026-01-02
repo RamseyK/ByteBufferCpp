@@ -18,10 +18,13 @@
 
 #include "HTTPMessage.h"
 
+#include <algorithm>
 #include <string>
 #include <format>
-#include <iostream>
 #include <memory>
+#include <print>
+
+#include <cctype>  // to std::tolower
 
 HTTPMessage::HTTPMessage() : ByteBuffer(4096) {
 }
@@ -185,45 +188,39 @@ void HTTPMessage::parseHeaders() {
 bool HTTPMessage::parseBody() {
     // Content-Length should exist (size of the Body data) if there is body data
     std::string hlenstr = "";
-    uint32_t contentLen = 0;
     hlenstr = getHeaderValue("Content-Length");
 
     // No body data to read:
     if (hlenstr.empty())
         return true;
 
-    contentLen = atoi(hlenstr.c_str());
+    uint32_t remainingLen = bytesRemaining();
+    uint32_t contentLen = atoi(hlenstr.c_str());
 
     // contentLen should NOT exceed the remaining number of bytes in the buffer
     // Add 1 to bytesRemaining so it includes the byte at the current read position
-    if (contentLen > bytesRemaining() + 1) {
-        // If it exceeds, read only up to the number of bytes remaining
-        // dataLen = bytesRemaining();
-
+    if (contentLen > remainingLen + 1) {
         // If it exceeds, there's a potential security issue and we can't reliably parse
-        parseErrorStr = std::format("Content-Length ({}) is greater than remaining bytes ({})", hlenstr, bytesRemaining());
+        parseErrorStr = std::format("Content-Length ({}) is greater than remaining bytes ({})", hlenstr, remainingLen);
+        return false;
+    } else if (remainingLen > contentLen) {
+        parseErrorStr = std::format("ByteBuffer remaining size to read ({}) is greater than provided Content-Length {}", remainingLen, contentLen);
         return false;
     } else if (contentLen == 0) {
-        parseErrorStr = "Content-Length is zero";
-        return false;
+        // Nothing to read, which is fine
+        return true;
     } else {
-        // Otherwise, we ca probably trust Content-Length is valid and read the specificed number of bytes
-        dataLen = contentLen;
+        // Otherwise, we can probably trust Content-Length is valid and read the specificed number of bytes
+        this->dataLen = contentLen;
     }
 
     // Create a big enough buffer to store the data
-    uint32_t dIdx = 0;
-    uint32_t s = size();
-    if (s > dataLen) {
-        parseErrorStr = std::format("ByteBuffer size of {} is greater than dataLen {}", s, dataLen);
-        return false;
-    }
-
-    data = new uint8_t[dataLen];
+    this->data = new uint8_t[this->dataLen];
 
     // Grab all the bytes from the current position to the end
-    for (uint32_t i = getReadPos(); i < s; i++) {
-        data[dIdx] = get(i);
+    uint32_t dIdx = 0;
+    for (uint32_t i = getReadPos(); i < remainingLen; i++) {
+        this->data[dIdx] = get(i);
         dIdx++;
     }
 
@@ -241,7 +238,7 @@ bool HTTPMessage::parseBody() {
 void HTTPMessage::addHeader(std::string const& line) {
     size_t kpos = line.find(':');
     if (kpos == std::string::npos) {
-        std::cout << "Could not addHeader: " << line << std::endl;
+        std::print("Could not addHeader: {}\n", line);
         return;
     }
     // We're choosing to reject HTTP Header keys longer than 32 characters
@@ -304,19 +301,15 @@ void HTTPMessage::addHeader(std::string const& key, int32_t value) {
  */
 std::string HTTPMessage::getHeaderValue(std::string const& key) const {
 
-    char c = 0;
-    std::string key_lower = "";
-
     // Lookup in map
     auto it = headers.find(key);
 
     // Key wasn't found, try an all lowercase variant as some clients won't always use proper capitalization
     if (it == headers.end()) {
 
-        for (uint32_t i = 0; i < key.length(); i++) {
-            c = key.at(i);
-            key_lower += tolower(c);
-        }
+        auto key_lower = std::string(key);
+        std::ranges::transform(key_lower.begin(), key_lower.end(), key_lower.begin(),
+            [](unsigned char c){ return std::tolower(c); });
 
         // Still not found, return empty string to indicate the Header value doesnt exist
         it = headers.find(key_lower);
@@ -366,4 +359,3 @@ uint32_t HTTPMessage::getNumHeaders() const {
 void HTTPMessage::clearHeaders() {
     headers.clear();
 }
-

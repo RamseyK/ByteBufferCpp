@@ -19,6 +19,7 @@
 #ifndef _HTTPMESSAGE_H_
 #define _HTTPMESSAGE_H_
 
+#include <array>
 #include <map>
 #include <memory>
 #include <string>
@@ -47,7 +48,7 @@ enum Method {
     PATCH = 8
 };
 
-const static char* const requestMethodStr[NUM_METHODS] = {
+const static std::array<const char*, NUM_METHODS> requestMethodStr = {
     "HEAD", // 0
     "GET", // 1
     "POST", // 2

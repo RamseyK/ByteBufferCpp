@@ -19,9 +19,10 @@
 #include "HTTPMessage.h"
 #include "HTTPRequest.h"
 
-#include <iostream>
 #include <format>
 #include <memory>
+#include <print>
+
 
 HTTPRequest::HTTPRequest() : HTTPMessage() {
 }
@@ -83,7 +84,7 @@ std::unique_ptr<uint8_t[]> HTTPRequest::create() {
     std::string mstr = "";
     mstr = methodIntToStr(method);
     if (mstr.empty()) {
-        std::cout << "Could not create HTTPRequest, unknown method id: " << method << std::endl;
+        std::print("Could not create HTTPRequest, unknown method id: {}\n", method);
         return nullptr;
     }
     putLine(std::format("{} {} {}", mstr, requestUri, version));
@@ -92,8 +93,8 @@ std::unique_ptr<uint8_t[]> HTTPRequest::create() {
     putHeaders();
 
     // If theres body data, add it now
-    if ((data != nullptr) && dataLen > 0) {
-        putBytes(data, dataLen);
+    if ((this->data != nullptr) && this->dataLen > 0) {
+        putBytes(this->data, this->dataLen);
     }
 
     // Allocate space for the returned byte array and return it
