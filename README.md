@@ -8,18 +8,17 @@ This class was written to provide Java's ByteBuffer functionality in many of my 
 Looking for ByteBuffer in C? Try https://github.com/RamseyK/ByteBufferC
 
 ## Why Byte Buffer?
--Relative and Absolute get() & put() methods
--Easier to work with than a raw byte array
--Read and Write large amounts of data
--Easy way to manipulate or create custom data structures
+* Relative and Absolute get() & put() methods
+* Easier to work with than a raw byte array
+* Read and Write large amounts of data
+* Easy way to manipulate or create custom data structures
 
 ## Example usage scenarios
--HTTP: Request & Response parsers
--Packets: Parse or Create custom packets to send over the network in a quick and easy manner
+* HTTP: Request & Response parsers
+* Packets: Parse or Create custom packets to send over the network in a quick and easy manner
 
 # Acknowledgements
-
-17 January 2016: Additions from upstream fork by Ashley Davis (SgtCoDFish)
+* 17 January 2016: Additions from upstream fork by Ashley Davis (SgtCoDFish)
 
 # License
 Apache License v2.0. See LICENSE file.
