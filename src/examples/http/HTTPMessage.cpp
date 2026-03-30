@@ -27,6 +27,7 @@
 
 #include <cctype>  // to std::tolower
 
+
 HTTPMessage::HTTPMessage() : ByteBuffer(4096) {
 }
 

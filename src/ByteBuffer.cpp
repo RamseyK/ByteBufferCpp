@@ -21,6 +21,7 @@
 #ifdef BB_UTILITY
 #include <iomanip>
 #include <iostream>
+#include <print>
 #include <string>
 #endif
 
@@ -329,44 +330,43 @@ std::string ByteBuffer::getName() const {
 
 void ByteBuffer::printInfo() const {
     uint32_t length = buf.size();
-    std::cout << "ByteBuffer " << name << " Length: " << length << ". Info Print" << std::endl;
+    std::print("ByteBuffer {} Length: {}. Info Print\n", name, length);
 }
 
 void ByteBuffer::printAH() const {
     uint32_t length = buf.size();
-    std::cout << "ByteBuffer " << name << " Length: " << length << ". ASCII & Hex Print" << std::endl;
+    std::print("ByteBuffer {} Length: {}. ASCII & Hex Print\n", name, length);
     for (uint32_t i = 0; i < length; i++) {
         std::cout << "0x" << std::setw(2) << std::setfill('0') << std::hex << int(buf[i]) << " ";
     }
-    std::printf("\n");
+    std::print("\n");
     for (uint32_t i = 0; i < length; i++) {
-        std::cout << (char)buf[i] << " ";
+        std::print("{} ", (char)buf[i]);
     }
-    std::cout << std::endl;
+    std::print("\n");
 }
 
 void ByteBuffer::printAscii() const {
     uint32_t length = buf.size();
-    std::cout << "ByteBuffer " << name << " Length: " << length << ". ASCII Print" << std::endl;
+    std::print("ByteBuffer {} Length: {}. ASCII Print\n", name, length);
     for (uint32_t i = 0; i < length; i++) {
-        std::cout << (char)buf[i] << " ";
+        std::print("{} ", (char)buf[i]);
     }
-    std::cout << std::endl;
+    std::print("\n");
 }
 
 void ByteBuffer::printHex() const {
     uint32_t length = buf.size();
-    std::cout << "ByteBuffer " << name << " Length: " << length << ". Hex Print" << std::endl;
+    std::print("ByteBuffer {} Length: {}. Hex Print\n", name, length);
     for (uint32_t i = 0; i < length; i++) {
         std::cout << "0x" << std::setw(2) << std::setfill('0') << std::hex << int(buf[i]) << " ";
     }
-    std::cout << std::endl;
+    std::print("\n");
 }
 
 void ByteBuffer::printPosition() const {
     uint32_t length = buf.size();
-    std::cout << "ByteBuffer " << name << " Length: " << length << " Read Pos: " << rpos << ". Write Pos: "
-            << wpos << std::endl;
+    std::print("ByteBuffer {} Length: {} Read Pos: {}. Write Pos: {}\n", name, length, rpos, wpos);
 }
 
 #endif  // BB_UTILITY
