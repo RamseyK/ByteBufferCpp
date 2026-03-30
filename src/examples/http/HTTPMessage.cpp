@@ -23,6 +23,7 @@
 #include <format>
 #include <memory>
 #include <print>
+#include <ranges>
 
 #include <cctype>  // to std::tolower
 
@@ -202,9 +203,11 @@ bool HTTPMessage::parseBody() {
     if (contentLen > remainingLen + 1) {
         // If it exceeds, there's a potential security issue and we can't reliably parse
         parseErrorStr = std::format("Content-Length ({}) is greater than remaining bytes ({})", hlenstr, remainingLen);
+        this->dataLen = 0;
         return false;
     } else if (remainingLen > contentLen) {
         parseErrorStr = std::format("ByteBuffer remaining size to read ({}) is greater than provided Content-Length {}", remainingLen, contentLen);
+        this->dataLen = 0;
         return false;
     } else if (contentLen == 0) {
         // Nothing to read, which is fine
@@ -219,7 +222,7 @@ bool HTTPMessage::parseBody() {
 
     // Grab all the bytes from the current position to the end
     uint32_t dIdx = 0;
-    for (uint32_t i = getReadPos(); i < remainingLen; i++) {
+    for (uint32_t i = getReadPos(); i < (getReadPos()+remainingLen); i++) {
         this->data[dIdx] = get(i);
         dIdx++;
     }
@@ -307,9 +310,9 @@ std::string HTTPMessage::getHeaderValue(std::string const& key) const {
     // Key wasn't found, try an all lowercase variant as some clients won't always use proper capitalization
     if (it == headers.end()) {
 
-        auto key_lower = std::string(key);
-        std::ranges::transform(key_lower.begin(), key_lower.end(), key_lower.begin(),
-            [](unsigned char c){ return std::tolower(c); });
+        auto key_lower = key
+            | std::views::transform([](unsigned char c){ return std::tolower(c); })
+            | std::ranges::to<std::string>();
 
         // Still not found, return empty string to indicate the Header value doesnt exist
         it = headers.find(key_lower);

@@ -23,41 +23,35 @@
 #include <iostream>
 #include <memory>
 #include <utility>
+
 #include <cstdlib>
+#include <cstring>
 
 using namespace std;
 
 int32_t main() {
     bool testFailed = false;
-    auto msg = std::make_unique<HTTPRequest>("line1\r\nline2\nline3");
-    auto req = std::make_unique<HTTPRequest>("POST /sample/path.html HTTP/1.1\r\nHeader1: value1\r\nHeader2: value2\r\nHeader3: value3\r\nContent-Length: 5\r\n\r\ndata");
-    auto req2 = std::make_unique<HTTPRequest>();
-    auto res = std::make_unique<HTTPResponse>("HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\nContent-Length: 111\r\n\r\n<html><body>\n<h2>No Host: header received</h2>\nHTTP 1.1 requests must include the Host: header.\n</body></html>");
     
     printf("HTTP Test Cases:\n");
 
     // Test getLine() in HTTPMessage
-
-    string l1 = "";
-    string l2 = "";
-    string l3 = "";
-    string l4 = "";
-    l1 = msg->getLine(); // Expected: line1
+    auto msg = std::make_unique<HTTPRequest>("line1\r\nline2\nline3\n");
+    string l1 = msg->getLine(); // Expected: "line1"
     if (strcmp(l1.c_str(), "line1") != 0) {
         printf("l1 mismatch. Got: %s. Expected: line1\n", l1.c_str());
         testFailed = true;
     }
-    l2 = msg->getLine(); // Expected: line2
+    string l2 = msg->getLine(); // Expected: "line2"
     if (strcmp(l2.c_str(), "line2") != 0) {
         printf("l2 mismatch. Got: %s. Expected: line2\n", l2.c_str());
         testFailed = true;
     }
-    l3 = msg->getLine(); // Expected: 
-    if (!l3.empty()) {
-        printf("l3 mismatch. Got: %s. Expected to be blank\n", l3.c_str());
+    string l3 = msg->getLine(); // Expected: "line3"
+    if (strcmp(l3.c_str(), "line3") != 0) {
+        printf("l3 mismatch. Got: %s. Expected: line3\n", l3.c_str());
         testFailed = true;
     }
-    l4 = msg->getLine(); // Expected: 
+    string l4 = msg->getLine(); // Expected empty string
     if (!l4.empty()) {
         printf("l4 mismatch. Got: %s. Expected to be blank\n", l4.c_str());
         testFailed = true;
@@ -66,13 +60,19 @@ int32_t main() {
     printf("%s (%u)\n%s (%u)\n%s (%u)\n%s (%u)\n\n", l1.c_str(), (unsigned int)l1.size(), l2.c_str(), (unsigned int)l2.size(), l3.c_str(), (unsigned int)l3.size(), l4.c_str(), (unsigned int)l4.size());
 
     // Test HTTPRequest parse()
+    auto req = std::make_unique<HTTPRequest>("POST /sample/path.html HTTP/1.1\r\nHeader1: value1\r\nHeader2: value2\r\nHeader3: value3\r\nContent-Length: 5\r\n\r\ndata");
+
     if (!req->parse()) {
         printf("HTTPRequest (req) had a parse error: %s\n", req->getParseError().c_str());
         testFailed = true;
     } else {
         printf("HTTPRequest(req): %i %s\n", req->getMethod(), req->getVersion().c_str());
         uint8_t *data = req->getData();
-        printf("Data (%i):\n", req->getDataLength());
+        if (std::strncmp((const char*)data, "data", 4) != 0) {
+            printf("HTTPRequest(req) expected data failed\n");
+            testFailed = true;
+        }
+        printf("Data (len=%i):\n", req->getDataLength());
         for (uint32_t i = 0; i < req->getDataLength(); i++) {
             printf("0x%02x ", data[i]);
         }
@@ -85,15 +85,25 @@ int32_t main() {
 
     // Populate vars in an HTTPRequest to test create()
     string req2Content = "var=2";
-    char req2ContentLen[8];
+    char req2ContentLen[8] = {0};
     snprintf(req2ContentLen, sizeof(req2ContentLen), "%zu", req2Content.size());
     uint32_t req2Size = 0;
+    auto req2 = std::make_unique<HTTPRequest>();
     req2->setMethod(Method(POST));
     req2->setRequestUri("/dir/test.php");
     req2->addHeader("From", "user@example.com");;
-    req2->addHeader("User-Agent", "ByteBuffer/1.0");
+    req2->addHeader("user-agent", "ByteBuffer/1.0");
     req2->addHeader("Content-Type", "text/html");
     req2->addHeader("Content-Length", req2ContentLen);
+    if (req2->getHeaderValue("Content-Length") != req2ContentLen) {
+        printf("Content-Length value retrieval failed\n");
+        testFailed = true;
+    }
+    // Tests lower-case check
+    if (req2->getHeaderValue("User-Agent") != "ByteBuffer/1.0") {
+        printf("User-Agent value retrieval failed\n");
+        testFailed = true;
+    }
     req2->addHeader("Multi-Test", "line1,\r\nline2,\r\nline3");
     req2->setData((uint8_t*)req2Content.c_str(), req2Content.size());
     auto req2Ret = req2->create();
@@ -111,9 +121,17 @@ int32_t main() {
         printf("HTTPResponse(res3): %s\n", req3Header.c_str());
         printf("req3 headers (%i):\n", req3->getNumHeaders());
         for (int32_t i = 0; i < req3->getNumHeaders(); i++) {
-            printf("%s\n", req3->getHeaderStr(i).c_str());
+            printf("[%i] %s\n", i, req3->getHeaderStr(i).c_str());
         }
-        printf("req3 data(%i):\n", req3->getDataLength());
+        if (req3->getNumHeaders() != 5) {
+            printf("req3 - Expected 5 headers and got %i\n", req3->getNumHeaders());
+            testFailed = true;
+        }
+        printf("req3 data(len=%i):\n", req3->getDataLength());
+        if (std::strncmp((const char*)req3->getData(), "var=2", 5) != 0) {
+            printf("req3 expected data failed\n");
+            testFailed = true;
+        }
         uint8_t *req3Data = req3->getData();
         for (uint32_t i = 0; i < req3->getDataLength(); i++) {
             printf("0x%02x ", req3Data[i]);
@@ -126,7 +144,7 @@ int32_t main() {
     }
     
     // Test HTTPResponse(res) parse()
-    
+    auto res = std::make_unique<HTTPResponse>("HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\nContent-Length: 111\r\n\r\n<html><body>\n<h2>No Host: header received</h2>\nHTTP 1.1 requests must include the Host: header.\n</body></html>");
     if (!res->parse()) {
         printf("res parse error: %s\n", res->getParseError().c_str());
         testFailed = true;
@@ -136,7 +154,11 @@ int32_t main() {
         for (int32_t i = 0; i < res->getNumHeaders(); i++) {
             printf("%s\n", res->getHeaderStr(i).c_str());
         }
-        printf("res data(%i):\n", res->getDataLength());
+        if (std::strncmp((const char*)res->getData(), "<html><body>\n<h2>No Host: header received</h2>\nHTTP 1.1 requests must include the Host: header.\n</body></html>", 110) != 0) {
+            printf("req3 expected data failed\n");
+            testFailed = true;
+        }
+        printf("res data(len=%i):\n", res->getDataLength());
         uint8_t *resData = res->getData();
         for (uint32_t i = 0; i < res->getDataLength(); i++) {
             printf("0x%02x ", resData[i]);
@@ -149,7 +171,8 @@ int32_t main() {
     }
 
     if (testFailed) {
-        printf("TEST PROGRAM FAILED: Read through output carefully to find point32_t of failure\n");
+        printf("TEST PROGRAM FAILED: Read through output carefully to find point of failure\n");
+        return 1;
     } else {
         printf("TEST PROGRAM PASSED\n");
     }

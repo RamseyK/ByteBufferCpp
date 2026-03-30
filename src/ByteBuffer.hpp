@@ -154,7 +154,7 @@ private:
 
     template<typename T> T read(uint32_t index) const {
         if (index + sizeof(T) <= buf.size())
-            return *((T*)&buf[index]);
+            return *((T* const)&buf[index]);
         return 0;
     }
 
