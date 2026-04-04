@@ -159,22 +159,23 @@ private:
     }
 
     template<typename T> void append(T data) {
-        uint32_t s = sizeof(data);
+        constexpr size_t s = sizeof(T);
 
-        if (size() < (wpos + s))
-            buf.resize(wpos + s);
+        if (size() < static_cast<size_t>(wpos) + s)
+            buf.resize(static_cast<size_t>(wpos) + s);
         memcpy(&buf[wpos], (uint8_t*)&data, s);
 
         wpos += s;
     }
 
     template<typename T> void insert(T data, uint32_t index) {
-        if ((index + sizeof(data)) > size()) {
-            buf.resize(size() + (index + sizeof(data)));
+        const size_t end = static_cast<size_t>(index) + sizeof(T);
+        if (end > size()) {
+            buf.resize(size() + end);
         }
 
-        memcpy(&buf[index], (uint8_t*)&data, sizeof(data));
-        wpos = index + sizeof(data);
+        memcpy(&buf[index], (uint8_t*)&data, sizeof(T));
+        wpos = index + sizeof(T);
     }
 };
 

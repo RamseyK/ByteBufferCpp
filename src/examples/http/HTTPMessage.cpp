@@ -219,7 +219,7 @@ bool HTTPMessage::parseBody() {
     }
 
     // Create a big enough buffer to store the data
-    this->data = new uint8_t[this->dataLen];
+    this->data = std::make_unique<uint8_t[]>(this->dataLen);
 
     // Grab all the bytes from the current position to the end
     uint32_t dIdx = 0;

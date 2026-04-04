@@ -20,6 +20,7 @@
 #define _HTTPMESSAGE_H_
 
 #include <array>
+#include <cstring>
 #include <map>
 #include <memory>
 #include <string>
@@ -90,7 +91,7 @@ public:
     std::string version = DEFAULT_HTTP_VERSION; // By default, all create() will indicate the version is whatever DEFAULT_HTTP_VERSION is
 
     // Message Body Data (Resource in the case of a response, extra parameters in the case of a request)
-    uint8_t* data = nullptr;
+    std::unique_ptr<uint8_t[]> data;
     uint32_t dataLen = 0;
 
 public:
@@ -135,13 +136,14 @@ public:
         return version;
     }
 
-    void setData(uint8_t* d, uint32_t len) {
-        data = d;
+    void setData(const uint8_t* d, uint32_t len) {
+        data = std::make_unique<uint8_t[]>(len);
+        std::memcpy(data.get(), d, len);
         dataLen = len;
     }
 
     uint8_t* getData() {
-        return data;
+        return data.get();
     }
 
     uint32_t getDataLength() const {
