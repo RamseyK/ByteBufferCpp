@@ -26,6 +26,7 @@
 #include <ranges>
 
 #include <cctype>  // to std::tolower
+#include <charconv>
 
 
 HTTPMessage::HTTPMessage() : ByteBuffer(4096) {
@@ -197,11 +198,19 @@ bool HTTPMessage::parseBody() {
         return true;
 
     uint32_t remainingLen = bytesRemaining();
-    uint32_t contentLen = atoi(hlenstr.c_str());
+    uint32_t contentLen = 0;
+    {
+        auto [ptr, ec] = std::from_chars(hlenstr.data(), hlenstr.data() + hlenstr.size(), contentLen);
+        if (ec != std::errc{}) {
+            parseErrorStr = std::format("Invalid Content-Length value: {}", hlenstr);
+            this->dataLen = 0;
+            return false;
+        }
+    }
 
     // contentLen should NOT exceed the remaining number of bytes in the buffer
     // Add 1 to bytesRemaining so it includes the byte at the current read position
-    if (contentLen > remainingLen + 1) {
+    if (static_cast<uint64_t>(contentLen) > static_cast<uint64_t>(remainingLen) + 1) {
         // If it exceeds, there's a potential security issue and we can't reliably parse
         parseErrorStr = std::format("Content-Length ({}) is greater than remaining bytes ({})", hlenstr, remainingLen);
         this->dataLen = 0;
@@ -218,15 +227,9 @@ bool HTTPMessage::parseBody() {
         this->dataLen = contentLen;
     }
 
-    // Create a big enough buffer to store the data
+    // Create a big enough buffer to store the data and read from the current position
     this->data = std::make_unique<uint8_t[]>(this->dataLen);
-
-    // Grab all the bytes from the current position to the end
-    uint32_t dIdx = 0;
-    for (uint32_t i = getReadPos(); i < (getReadPos()+remainingLen); i++) {
-        this->data[dIdx] = get(i);
-        dIdx++;
-    }
+    getBytes(this->data.get(), this->dataLen);
 
     // We could handle chunked Request/Response parsing (with footers) here, but, we won't.
 
