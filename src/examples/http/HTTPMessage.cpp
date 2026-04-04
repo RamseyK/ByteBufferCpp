@@ -172,7 +172,7 @@ void HTTPMessage::parseHeaders() {
     while (hline.size() > 0) {
         // Case where values are on multiple lines ending with a comma
         app = hline;
-        while (app[app.size() - 1] == ',') {
+        while (!app.empty() && app[app.size() - 1] == ',') {
             app = getLine();
             hline += app;
         }

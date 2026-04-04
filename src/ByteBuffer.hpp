@@ -171,7 +171,7 @@ private:
     template<typename T> void insert(T data, uint32_t index) {
         const size_t end = static_cast<size_t>(index) + sizeof(T);
         if (end > size()) {
-            buf.resize(size() + end);
+            buf.resize(end);
         }
 
         memcpy(&buf[index], (uint8_t*)&data, sizeof(T));

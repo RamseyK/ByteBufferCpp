@@ -68,7 +68,7 @@ int32_t main() {
     } else {
         printf("HTTPRequest(req): %i %s\n", req->getMethod(), req->getVersion().c_str());
         uint8_t *data = req->getData();
-        if (std::strncmp((const char*)data, "data", 4) != 0) {
+        if (data == nullptr || std::strncmp((const char*)data, "data", 4) != 0) {
             printf("HTTPRequest(req) expected data failed\n");
             testFailed = true;
         }
