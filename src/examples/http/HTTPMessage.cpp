@@ -138,19 +138,19 @@ std::string HTTPMessage::getStrElement(char delim) {
     if (startPos > endPos)
         return "";
 
-    // Calculate the size based on the found ending position
-    uint32_t size = (endPos + 1) - startPos;
-    if (size <= 0)
+    // Token spans [startPos, endPos); delimiter sits at endPos
+    uint32_t tokenLen = static_cast<uint32_t>(endPos - startPos);
+    if (tokenLen == 0)
         return "";
 
-    // Grab the std::string from the ByteBuffer up to the delimiter
-    auto str = std::make_unique<char[]>(size);
-    getBytes((uint8_t*)str.get(), size);
-    str[size - 1] = 0x00; // NULL termination
-    std::string ret = str.get();
+    // Grab the token bytes (excludes delimiter), then step past the delimiter
+    auto str = std::make_unique<char[]>(tokenLen + 1);
+    getBytes(reinterpret_cast<uint8_t*>(str.get()), tokenLen);
+    str[tokenLen] = '\0';
+    std::string ret(str.get(), tokenLen);
 
-    // Increment the read position PAST the delimiter
-    setReadPos(endPos + 1);
+    // Advance the read position past the delimiter
+    setReadPos(static_cast<uint32_t>(endPos) + 1);
 
     return ret;
 }
@@ -268,7 +268,7 @@ void HTTPMessage::addHeader(std::string const& line) {
 
     // Skip all leading spaces in the value
     int32_t i = 0;
-    while (i < value.size() && value.at(i) == 0x20) {
+    while (i < static_cast<int32_t>(value.size()) && value[i] == 0x20) {
         i++;
     }
     value = value.substr(i, value.size());
