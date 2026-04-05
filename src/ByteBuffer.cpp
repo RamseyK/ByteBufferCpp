@@ -19,8 +19,6 @@
 #include "ByteBuffer.hpp"
 
 #ifdef BB_UTILITY
-#include <iomanip>
-#include <iostream>
 #include <print>
 #include <string>
 #endif
@@ -340,7 +338,7 @@ void ByteBuffer::printAH() const {
     uint32_t length = buf.size();
     std::print("ByteBuffer {} Length: {}. ASCII & Hex Print\n", name, length);
     for (uint32_t i = 0; i < length; i++) {
-        std::cout << "0x" << std::setw(2) << std::setfill('0') << std::hex << int(buf[i]) << " ";
+        std::print("0x{:02x} ", static_cast<uint8_t>(buf[i]));
     }
     std::print("\n");
     for (uint32_t i = 0; i < length; i++) {
@@ -362,7 +360,7 @@ void ByteBuffer::printHex() const {
     uint32_t length = buf.size();
     std::print("ByteBuffer {} Length: {}. Hex Print\n", name, length);
     for (uint32_t i = 0; i < length; i++) {
-        std::cout << "0x" << std::setw(2) << std::setfill('0') << std::hex << int(buf[i]) << " ";
+        std::print("0x{:02x} ", static_cast<uint8_t>(buf[i]));
     }
     std::print("\n");
 }
