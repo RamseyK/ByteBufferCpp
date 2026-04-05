@@ -242,9 +242,9 @@ bool HTTPMessage::parseBody() {
  *
  * @param string containing formatted header: value
  */
-void HTTPMessage::addHeader(std::string const& line) {
+void HTTPMessage::addHeader(std::string_view line) {
     size_t kpos = line.find(':');
-    if (kpos == std::string::npos) {
+    if (kpos == std::string_view::npos) {
         std::print("Could not addHeader: {}\n", line);
         return;
     }
@@ -252,7 +252,7 @@ void HTTPMessage::addHeader(std::string const& line) {
     if (kpos > 32)
         return;
 
-    std::string key = line.substr(0, kpos);
+    std::string_view key = line.substr(0, kpos);
     if (key.empty())
         return;
 
@@ -264,14 +264,14 @@ void HTTPMessage::addHeader(std::string const& line) {
     if (value_len > 4096)
         return;
 
-    std::string value = line.substr(kpos + 1, value_len);
+    std::string_view value = line.substr(kpos + 1, value_len);
 
     // Skip all leading spaces in the value
     int32_t i = 0;
     while (i < static_cast<int32_t>(value.size()) && value[i] == 0x20) {
         i++;
     }
-    value = value.substr(i, value.size());
+    value = value.substr(i);
     if (value.empty())
         return;
 
@@ -285,8 +285,8 @@ void HTTPMessage::addHeader(std::string const& line) {
  * @param key String representation of the Header Key
  * @param value String representation of the Header value
  */
-void HTTPMessage::addHeader(std::string const& key, std::string const& value) {
-    headers.try_emplace(key, value);
+void HTTPMessage::addHeader(std::string_view key, std::string_view value) {
+    headers.try_emplace(std::string(key), std::string(value));
 }
 
 /**
@@ -296,8 +296,8 @@ void HTTPMessage::addHeader(std::string const& key, std::string const& value) {
  * @param key String representation of the Header Key
  * @param value Integer representation of the Header value
  */
-void HTTPMessage::addHeader(std::string const& key, int32_t value) {
-    headers.try_emplace(key, std::format("{}", value));
+void HTTPMessage::addHeader(std::string_view key, int32_t value) {
+    headers.try_emplace(std::string(key), std::format("{}", value));
 }
 
 /**
@@ -306,7 +306,7 @@ void HTTPMessage::addHeader(std::string const& key, int32_t value) {
  *
  * @param key Key to identify the header
  */
-std::string HTTPMessage::getHeaderValue(std::string const& key) const {
+std::string HTTPMessage::getHeaderValue(std::string_view key) const {
 
     // Lookup in map
     auto it = headers.find(key);

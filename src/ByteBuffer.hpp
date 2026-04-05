@@ -20,6 +20,7 @@
 #define _BYTEBUFFER_H_
 
 #include <cstdint>
+#include <cstring>
 #include <vector>
 #include <memory>
 
@@ -153,9 +154,12 @@ private:
     }
 
     template<typename T> T read(uint32_t index) const {
-        if (index + sizeof(T) <= buf.size())
-            return *((T* const)&buf[index]);
-        return 0;
+        if (index + sizeof(T) <= buf.size()) {
+            T val;
+            std::memcpy(&val, &buf[index], sizeof(T));
+            return val;
+        }
+        return T{};
     }
 
     template<typename T> void append(T data) {

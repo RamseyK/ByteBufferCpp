@@ -21,9 +21,10 @@
 
 #include <array>
 #include <cstring>
-#include <map>
+#include <flat_map>
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include "../../ByteBuffer.hpp"
 
@@ -83,7 +84,7 @@ enum Status {
 
 class HTTPMessage : public ByteBuffer {
 private:
-    std::map<std::string, std::string, std::less<>> headers;
+    std::flat_map<std::string, std::string, std::less<>> headers;
 
 public:
     std::string parseErrorStr = "";
@@ -114,10 +115,10 @@ public:
     bool parseBody();
 
     // Header Map manipulation
-    void addHeader(std::string const& line);
-    void addHeader(std::string const& key, std::string const& value);
-    void addHeader(std::string const& key, int32_t value);
-    std::string getHeaderValue(std::string const& key) const;
+    void addHeader(std::string_view line);
+    void addHeader(std::string_view key, std::string_view value);
+    void addHeader(std::string_view key, int32_t value);
+    std::string getHeaderValue(std::string_view key) const;
     std::string getHeaderStr(int32_t index) const;
     uint32_t getNumHeaders() const;
     void clearHeaders();
