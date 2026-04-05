@@ -6,3 +6,7 @@ build/*
 build
 ._*
 .DS_Store*
+*.idea
+
+*.o
+*.o.tmp
