@@ -83,7 +83,7 @@ std::string HTTPMessage::getLine() {
     // Scan for the first CR or LF without advancing rpos
     int32_t crlfPos = -1;
     for (uint32_t i = startPos; i < bufSize; i++) {
-        const char c = getChar(i); // absolute read — rpos unchanged
+        const char c = getChar(i); // absolute read at index — rpos unchanged
         if (c == '\r' || c == '\n') {
             crlfPos = static_cast<int32_t>(i);
             break;
@@ -107,7 +107,7 @@ std::string HTTPMessage::getLine() {
     // Consume up to 2 CR/LF bytes (\r\n as a pair) without skipping a following blank line
     uint32_t k = 0;
     while (getReadPos() < bufSize && k < 2) {
-        const char c = static_cast<char>(peek());
+        const auto c = static_cast<char>(peek());
         if (c != '\r' && c != '\n')
             break;
         get();
@@ -137,7 +137,7 @@ std::string HTTPMessage::getStrElement(char delim) {
         return "";
 
     // Token spans [startPos, endPos); delimiter sits at endPos
-    uint32_t tokenLen = static_cast<uint32_t>(endPos - startPos);
+    auto tokenLen = static_cast<uint32_t>(endPos - startPos);
     if (tokenLen == 0)
         return "";
 
