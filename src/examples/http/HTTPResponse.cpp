@@ -129,14 +129,12 @@ bool HTTPResponse::parse() {
     reason = getLine(); // Pull till \r\n termination
 
     // Parse the status code integer directly; fall back to reason-string matching if malformed
-    {
-        int32_t code = 0;
-        auto [ptr, ec] = std::from_chars(statusstr.data(), statusstr.data() + statusstr.size(), code);
-        if (ec == std::errc{}) {
-            status = code;
-        } else {
-            determineStatusCode();
-        }
+    int32_t code = 0;
+    auto [ptr, ec] = std::from_chars(statusstr.data(), statusstr.data() + statusstr.size(), code);
+    if (ec == std::errc{}) {
+        this->status = code;
+    } else {
+        determineStatusCode();
     }
 
     // Optional - Validate the HTTP version. If there is a mismatch, discontinue parsing

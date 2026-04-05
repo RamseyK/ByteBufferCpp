@@ -97,7 +97,7 @@ std::string HTTPMessage::getLine() {
         return "";
     }
 
-    // Copy line content in one memcpy via getBytes
+    // Copy line content into our HTTPMessage ByteBuffer
     uint32_t lineLen = static_cast<uint32_t>(crlfPos) - startPos;
     std::string ret(lineLen, '\0');
     if (lineLen > 0)
@@ -166,6 +166,7 @@ bool HTTPMessage::parseHeaders() {
     uint32_t header_count = 0;
     std::string hline = getLine();
 
+    // Keep pulling headers until a blank line has been reached (signaling the end of headers)
     while (!hline.empty()) {
         if (++header_count > MAX_HEADERS) {
             parseErrorStr = "Too many headers";
@@ -208,13 +209,13 @@ bool HTTPMessage::parseBody() {
 
     uint32_t remainingLen = bytesRemaining();
     uint32_t contentLen = 0;
-    {
-        auto [ptr, ec] = std::from_chars(hlenstr.data(), hlenstr.data() + hlenstr.size(), contentLen);
-        if (ec != std::errc{}) {
-            parseErrorStr = std::format("Invalid Content-Length value: {}", hlenstr);
-            this->dataLen = 0;
-            return false;
-        }
+
+    // Validate Content-Length is an integer
+    auto [ptr, ec] = std::from_chars(hlenstr.data(), hlenstr.data() + hlenstr.size(), contentLen);
+    if (ec != std::errc{}) {
+        parseErrorStr = std::format("Invalid Content-Length value: {}", hlenstr);
+        this->dataLen = 0;
+        return false;
     }
 
     constexpr uint32_t MAX_CONTENT_LENGTH = 256u * 1024u * 1024u; // 256 MB
@@ -302,9 +303,9 @@ void HTTPMessage::addHeader(std::string_view line) {
  * @param value String representation of the Header value
  */
 void HTTPMessage::addHeader(std::string_view key, std::string_view value) {
-    std::string key_lower(key);
-    std::transform(key_lower.begin(), key_lower.end(), key_lower.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+    auto key_lower = key
+                     | std::views::transform([](unsigned char c){ return std::tolower(c); })
+                     | std::ranges::to<std::string>();
     headers.try_emplace(std::move(key_lower), std::string(value));
 }
 
@@ -316,9 +317,9 @@ void HTTPMessage::addHeader(std::string_view key, std::string_view value) {
  * @param value Integer representation of the Header value
  */
 void HTTPMessage::addHeader(std::string_view key, int32_t value) {
-    std::string key_lower(key);
-    std::transform(key_lower.begin(), key_lower.end(), key_lower.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+    auto key_lower = key
+                     | std::views::transform([](unsigned char c){ return std::tolower(c); })
+                     | std::ranges::to<std::string>();
     headers.try_emplace(std::move(key_lower), std::format("{}", value));
 }
 
@@ -330,9 +331,9 @@ void HTTPMessage::addHeader(std::string_view key, int32_t value) {
  */
 std::string HTTPMessage::getHeaderValue(std::string_view key) const {
     // All keys are stored lowercase (normalized at insertion), so lowercase the lookup key once
-    std::string key_lower(key);
-    std::transform(key_lower.begin(), key_lower.end(), key_lower.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+    auto key_lower = key
+                     | std::views::transform([](unsigned char c){ return std::tolower(c); })
+                     | std::ranges::to<std::string>();
 
     auto it = headers.find(key_lower);
     return (it != headers.end()) ? it->second : "";

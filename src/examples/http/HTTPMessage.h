@@ -21,7 +21,7 @@
 
 #include <array>
 #include <cstring>
-#include <flat_map>
+#include <map>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -84,7 +84,7 @@ enum Status {
 
 class HTTPMessage : public ByteBuffer {
 private:
-    std::flat_map<std::string, std::string, std::less<>> headers;
+    std::map<std::string, std::string, std::less<>> headers;
 
 public:
     std::string parseErrorStr = "";
