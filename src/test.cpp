@@ -16,7 +16,7 @@
  limitations under the License.
  */
 
-#include <cstdio>
+#include <print>
 
 #include <string>
 #include <memory>
@@ -32,13 +32,13 @@ int32_t main() {
     auto bb2 = std::make_unique<ByteBuffer>();
 
     bb1->printPosition();
-    printf("bb1 bytes Remaining: %i\n", bb1->bytesRemaining());
+    std::print("bb1 bytes Remaining: {}\n", bb1->bytesRemaining());
     bb1->put(0xDE);
     bb1->put(0xAD);
     bb1->put(0xBA);
     bb1->put(0xBE);
     bb1->printPosition();
-    printf("bb1 bytes Remaining: %i\n", bb1->bytesRemaining());
+    std::print("bb1 bytes Remaining: {}\n", bb1->bytesRemaining());
 
     bb1->printHex();
     bb1->printPosition();
@@ -62,8 +62,8 @@ int32_t main() {
 
     f2 = bb1->find((uint8_t) 0xDE, bb1->getReadPos());
 
-    std::printf("t1 = %x, t2 = %x, t3 = %x, t4 = %x, t5 = %x\n", t1, t2, t3, t4, t5);
-    std::printf("f0 = %i, f1 = %i, f2 = %i\n", f0, f1, f2);
+    std::print("t1 = {:x}, t2 = {:x}, t3 = {:x}, t4 = {:x}, t5 = {:x}\n", t1, t2, t3, t4, t5);
+    std::print("f0 = {}, f1 = {}, f2 = {}\n", f0, f1, f2);
     bb1->printPosition();
 
     std::string test = "TesTtest2";
@@ -72,12 +72,12 @@ int32_t main() {
     bb2->printAscii();
 
     auto bb3 = std::make_unique<ByteBuffer>(12);
-    printf("bb3 size=%i\n", bb3->size());
+    std::print("bb3 size={}\n", bb3->size());
     bb3->put('a', 16);
     bb3->printPosition();
     bb3->printHex();
     bb3->printAscii();
-    printf("bb3 size=%i\n", bb3->size());
+    std::print("bb3 size={}\n", bb3->size());
 
     return 0;
 }

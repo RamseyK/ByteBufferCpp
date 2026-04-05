@@ -20,7 +20,7 @@
  * are created and parsed by a server's packet parsing function. For simplicity, actual socket code has been omitted
  */
 
-#include <iostream>
+#include <print>
 #include "../../ByteBuffer.hpp"
 
 using namespace std;
@@ -101,7 +101,7 @@ ByteBuffer* createChatMsgPacket(string name, string msg) {
  * @param pkt A pointer to a ByteBuffer containing the packet data
  */
 void serverParser(ByteBuffer* pkt) {
-   printf("Parsing ByteBuffer'd packet of size: %i\n", pkt->size());
+   std::print("Parsing ByteBuffer'd packet of size: {}\n", pkt->size());
 
    // Read the first 2 bytes (short) of the packet to determine the opcode
    short opcode = 0;
@@ -110,7 +110,7 @@ void serverParser(ByteBuffer* pkt) {
    // Switch based off the opcode to handle the specific packet
    switch(opcode) {
       case Opcode(LOGIN): {
-         printf("Received a Login packet. Information: \n");
+         std::print("Received a Login packet. Information: \n");
 
          int32_t version = 0;
          int32_t usize = 0, psize = 0;
@@ -124,19 +124,19 @@ void serverParser(ByteBuffer* pkt) {
          usize = pkt->getInt();
          username = new uint8_t[usize];
          pkt->getBytes(username, usize);
-         
+
          psize = pkt->getInt();
          password = new uint8_t[psize];
          pkt->getBytes(password, psize);
 
-         printf("Client Version: %i, Username: %s Password: %s\n", version, username, password);
+         std::print("Client Version: {}, Username: {} Password: {}\n", version, (const char*)username, (const char*)password);
 
          delete [] username;
          delete [] password;
          }
          break;
       case Opcode(MESSAGE): {
-         printf("Received a Message packet. Information: \n");
+         std::print("Received a Message packet. Information: \n");
 
          int32_t usize = 0, msize = 0;
          uint8_t *name;
@@ -147,23 +147,23 @@ void serverParser(ByteBuffer* pkt) {
          usize = pkt->getInt();
          name = new uint8_t[usize];
          pkt->getBytes(name, usize);
-         
+
          msize = pkt->getInt();
          msg = new uint8_t[msize];
          pkt->getBytes(msg, msize);
 
-         printf("Name: %s Msg: %s\n", name, msg);
+         std::print("Name: {} Msg: {}\n", (const char*)name, (const char*)msg);
 
          delete [] name;
          delete [] msg;
          }
          break;
       default:
-         printf("Unknown Opcode: 0x%x\n", opcode);
+         std::print("Unknown Opcode: 0x{:x}\n", opcode);
          break;
    }
 
-   printf("\n");
+   std::print("\n");
 }
 
 int32_t main() {
