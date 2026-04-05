@@ -46,13 +46,10 @@ HTTPMessage::HTTPMessage(const uint8_t* pData, uint32_t len) : ByteBuffer(pData,
  * @param str String to put into the ByteBuffer
  * @param crlf_end If true (default), end the line with a \r\n
  */
-void HTTPMessage::putLine(std::string str, bool crlf_end) {
-    // Terminate with crlf if flag set
+void HTTPMessage::putLine(std::string_view str, bool crlf_end) {
+    putBytes(reinterpret_cast<const uint8_t*>(str.data()), str.size());
     if (crlf_end)
-        str += "\r\n";
-
-    // Put the entire contents of str into the buffer
-    putBytes((const uint8_t* const)str.c_str(), str.size());
+        putBytes(reinterpret_cast<const uint8_t*>("\r\n"), 2);
 }
 
 /**
@@ -77,43 +74,44 @@ void HTTPMessage::putHeaders() {
  * @return Contents of the line in a string (without CR or LF)
  */
 std::string HTTPMessage::getLine() {
-    std::string ret = "";
-    int32_t startPos = getReadPos();
-    bool newLineReached = false;
-    char c = 0;
+    const uint32_t startPos = getReadPos();
+    const uint32_t bufSize = size();
 
-    // Append characters to the return std::string until we hit the end of the buffer, a CR (13) or LF (10)
-    for (uint32_t i = startPos; i < size(); i++) {
-        // If the next byte is a \r or \n, we've reached the end of the line and should break out of the loop
-        c = peek();
-        if ((c == 13) || (c == 10)) {
-            newLineReached = true;
+    if (startPos >= bufSize)
+        return "";
+
+    // Scan for the first CR or LF without advancing rpos
+    int32_t crlfPos = -1;
+    for (uint32_t i = startPos; i < bufSize; i++) {
+        const char c = getChar(i); // absolute read — rpos unchanged
+        if (c == '\r' || c == '\n') {
+            crlfPos = static_cast<int32_t>(i);
             break;
         }
-
-        // Otherwise, append the next character to the std::string
-        ret += getChar();
     }
 
-    // If a line termination was never reached, discard the result and conclude there are no more lines to parse
-    if (!newLineReached) {
-        setReadPos(startPos); // Reset the position to before the last line read that we are now discarding
-        ret = "";
-        return ret;
+    // No line terminator found — no complete line available
+    if (crlfPos < 0) {
+        // Reset the position to before the last line read that we are now discarding
+        setReadPos(startPos);
+        return "";
     }
 
-    // Increment the read position until the end of a CR or LF chain, so the read position will then point to the next line
-    // Also, only read a maximum of 2 characters so as to not skip a blank line that is only \r\n
+    // Copy line content in one memcpy via getBytes
+    uint32_t lineLen = static_cast<uint32_t>(crlfPos) - startPos;
+    std::string ret(lineLen, '\0');
+    if (lineLen > 0)
+        getBytes(reinterpret_cast<uint8_t*>(ret.data()), lineLen);
+    // rpos is now at crlfPos
+
+    // Consume up to 2 CR/LF bytes (\r\n as a pair) without skipping a following blank line
     uint32_t k = 0;
-    for (uint32_t i = getReadPos(); i < size(); i++) {
-        if (k++ >= 2)
+    while (getReadPos() < bufSize && k < 2) {
+        const char c = static_cast<char>(peek());
+        if (c != '\r' && c != '\n')
             break;
-        c = getChar();
-        if ((c != 13) && (c != 10)) {
-            // Set the Read position back one because the retrived character wasn't a LF or CR
-            setReadPos(getReadPos() - 1);
-            break;
-        }
+        get();
+        k++;
     }
 
     return ret;
@@ -161,25 +159,36 @@ std::string HTTPMessage::getStrElement(char delim) {
  * should be called to parse and populate the internal map of headers.
  * Parse headers will move the read position past the blank line that signals the end of the headers
  */
-void HTTPMessage::parseHeaders() {
-    std::string hline = "";
-    std::string app = "";
+bool HTTPMessage::parseHeaders() {
+    constexpr uint32_t MAX_HEADERS = 128;
+    constexpr uint32_t MAX_MULTILINE_SIZE = 16384; // 16 KB cap on accumulated multiline header value
 
-    // Get the first header
-    hline = getLine();
+    uint32_t header_count = 0;
+    std::string hline = getLine();
 
-    // Keep pulling headers until a blank line has been reached (signaling the end of headers)
-    while (hline.size() > 0) {
+    while (!hline.empty()) {
+        if (++header_count > MAX_HEADERS) {
+            parseErrorStr = "Too many headers";
+            return false;
+        }
+
         // Case where values are on multiple lines ending with a comma
-        app = hline;
-        while (!app.empty() && app[app.size() - 1] == ',') {
-            app = getLine();
+        uint32_t accumulated = hline.size();
+        while (!hline.empty() && hline.back() == ',') {
+            std::string app = getLine();
+            accumulated += app.size();
+            if (accumulated > MAX_MULTILINE_SIZE) {
+                parseErrorStr = "Multiline header value exceeds maximum size";
+                return false;
+            }
             hline += app;
         }
 
         addHeader(hline);
         hline = getLine();
     }
+
+    return true;
 }
 
 /**
@@ -206,6 +215,13 @@ bool HTTPMessage::parseBody() {
             this->dataLen = 0;
             return false;
         }
+    }
+
+    constexpr uint32_t MAX_CONTENT_LENGTH = 256u * 1024u * 1024u; // 256 MB
+    if (contentLen > MAX_CONTENT_LENGTH) {
+        parseErrorStr = std::format("Content-Length {} exceeds maximum allowed size", contentLen);
+        this->dataLen = 0;
+        return false;
     }
 
     // contentLen should NOT exceed the remaining number of bytes in the buffer
@@ -286,7 +302,10 @@ void HTTPMessage::addHeader(std::string_view line) {
  * @param value String representation of the Header value
  */
 void HTTPMessage::addHeader(std::string_view key, std::string_view value) {
-    headers.try_emplace(std::string(key), std::string(value));
+    std::string key_lower(key);
+    std::transform(key_lower.begin(), key_lower.end(), key_lower.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+    headers.try_emplace(std::move(key_lower), std::string(value));
 }
 
 /**
@@ -297,7 +316,10 @@ void HTTPMessage::addHeader(std::string_view key, std::string_view value) {
  * @param value Integer representation of the Header value
  */
 void HTTPMessage::addHeader(std::string_view key, int32_t value) {
-    headers.try_emplace(std::string(key), std::format("{}", value));
+    std::string key_lower(key);
+    std::transform(key_lower.begin(), key_lower.end(), key_lower.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+    headers.try_emplace(std::move(key_lower), std::format("{}", value));
 }
 
 /**
@@ -307,25 +329,13 @@ void HTTPMessage::addHeader(std::string_view key, int32_t value) {
  * @param key Key to identify the header
  */
 std::string HTTPMessage::getHeaderValue(std::string_view key) const {
+    // All keys are stored lowercase (normalized at insertion), so lowercase the lookup key once
+    std::string key_lower(key);
+    std::transform(key_lower.begin(), key_lower.end(), key_lower.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
 
-    // Lookup in map
-    auto it = headers.find(key);
-
-    // Key wasn't found, try an all lowercase variant as some clients won't always use proper capitalization
-    if (it == headers.end()) {
-
-        auto key_lower = key
-            | std::views::transform([](unsigned char c){ return std::tolower(c); })
-            | std::ranges::to<std::string>();
-
-        // Still not found, return empty string to indicate the Header value doesnt exist
-        it = headers.find(key_lower);
-        if (it == headers.end())
-            return "";
-    }
-
-    // Otherwise, return the value
-    return it->second;
+    auto it = headers.find(key_lower);
+    return (it != headers.end()) ? it->second : "";
 }
 
 /**

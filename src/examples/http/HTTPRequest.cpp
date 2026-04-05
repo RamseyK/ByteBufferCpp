@@ -151,7 +151,8 @@ bool HTTPRequest::parse() {
     // }
 
     // Parse and populate the headers map using the parseHeaders helper
-    parseHeaders();
+    if (!parseHeaders())
+        return false;
 
     // Only POST and PUT can have Content (data after headers)
     if ((method != POST) && (method != PUT))

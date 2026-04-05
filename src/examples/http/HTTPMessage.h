@@ -105,13 +105,13 @@ public:
     virtual bool parse() = 0;
 
     // Create helpers
-    void putLine(std::string str = "", bool crlf_end = true);
+    void putLine(std::string_view str = "", bool crlf_end = true);
     void putHeaders();
 
     // Parse helpers
     std::string getLine();
     std::string getStrElement(char delim = 0x20); // 0x20 = "space"
-    void parseHeaders();
+    bool parseHeaders();
     bool parseBody();
 
     // Header Map manipulation

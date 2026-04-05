@@ -187,9 +187,10 @@ uint8_t ByteBuffer::get(uint32_t index) const {
 }
 
 void ByteBuffer::getBytes(uint8_t* const out_buf, uint32_t out_len) {
-    for (uint32_t i = 0; i < out_len; i++) {
-        out_buf[i] = read<uint8_t>();
-    }
+    if (out_len == 0) return;
+    if (static_cast<size_t>(rpos) + out_len > buf.size()) return;
+    std::memcpy(out_buf, &buf[rpos], out_len);
+    rpos += out_len;
 }
 
 char ByteBuffer::getChar() {
@@ -258,17 +259,19 @@ void ByteBuffer::put(uint8_t b, uint32_t index) {
 }
 
 void ByteBuffer::putBytes(const uint8_t* const b, uint32_t len) {
-    // Insert the data one byte at a time into the internal buffer at position i+starting index
-    for (uint32_t i = 0; i < len; i++)
-        append<uint8_t>(b[i]);
+    if (len == 0) return;
+    const size_t end = static_cast<size_t>(wpos) + len;
+    if (end > buf.size()) buf.resize(end);
+    std::memcpy(&buf[wpos], b, len);
+    wpos += len;
 }
 
 void ByteBuffer::putBytes(const uint8_t* const b, uint32_t len, uint32_t index) {
-    wpos = index;
-
-    // Insert the data one byte at a time into the internal buffer at position i+starting index
-    for (uint32_t i = 0; i < len; i++)
-        append<uint8_t>(b[i]);
+    if (len == 0) return;
+    const size_t end = static_cast<size_t>(index) + len;
+    if (end > buf.size()) buf.resize(end);
+    std::memcpy(&buf[index], b, len);
+    wpos = index + len;
 }
 
 void ByteBuffer::putChar(char value) {

@@ -146,7 +146,8 @@ bool HTTPResponse::parse() {
     // }
 
     // Parse and populate the headers map using the parseHeaders helper
-    parseHeaders();
+    if (!parseHeaders())
+        return false;
 
     // If the body of the message
     if (!parseBody())
