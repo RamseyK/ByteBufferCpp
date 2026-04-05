@@ -66,7 +66,7 @@ ByteBuffer::ByteBuffer(const uint8_t* arr, uint32_t size) {
  * @return Number of bytes from rpos to the end (size())
  */
 uint32_t ByteBuffer::bytesRemaining() const {
-    return size() - rpos;
+    return rpos >= size() ? 0 : size() - rpos;
 }
 
 /**

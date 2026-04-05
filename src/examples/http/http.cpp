@@ -128,7 +128,7 @@ int32_t main() {
             testFailed = true;
         }
         printf("req3 data(len=%i):\n", req3->getDataLength());
-        if (std::strncmp((const char*)req3->getData(), "var=2", 5) != 0) {
+        if (req3->getData() == nullptr || std::strncmp((const char*)req3->getData(), "var=2", 5) != 0) {
             printf("req3 expected data failed\n");
             testFailed = true;
         }
@@ -154,7 +154,7 @@ int32_t main() {
         for (int32_t i = 0; i < res->getNumHeaders(); i++) {
             printf("%s\n", res->getHeaderStr(i).c_str());
         }
-        if (std::strncmp((const char*)res->getData(), "<html><body>\n<h2>No Host: header received</h2>\nHTTP 1.1 requests must include the Host: header.\n</body></html>", 110) != 0) {
+        if (res->getData() == nullptr || std::strncmp((const char*)res->getData(), "<html><body>\n<h2>No Host: header received</h2>\nHTTP 1.1 requests must include the Host: header.\n</body></html>", 110) != 0) {
             printf("req3 expected data failed\n");
             testFailed = true;
         }
