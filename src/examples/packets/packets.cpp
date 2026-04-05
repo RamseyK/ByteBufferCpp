@@ -20,7 +20,9 @@
  * are created and parsed by a server's packet parsing function. For simplicity, actual socket code has been omitted
  */
 
+#include <memory>
 #include <print>
+#include <string>
 #include "../../ByteBuffer.hpp"
 
 using namespace std;
@@ -28,6 +30,8 @@ using namespace std;
 ByteBuffer* createLoginPacket(int32_t version, string username, string password);
 ByteBuffer* createChatMsgPacket(string name, string msg);
 void serverParser(ByteBuffer* pkt);
+bool verifyLoginPacket(ByteBuffer* pkt, int32_t expVersion, const string& expUsername, const string& expPassword);
+bool verifyChatMsgPacket(ByteBuffer* pkt, const string& expName, const string& expMsg);
 
 /**
  * Opcodes for the fictional network protocol
@@ -95,8 +99,8 @@ ByteBuffer* createChatMsgPacket(string name, string msg) {
 
 /**
  * Packet Parser
- * This ficticious packet parser on the "server" will read the ByteBuffer'd packets and print32_t out information about each packet it understands
- * according to the networking protocol
+ * This fictitious packet parser on the "server" reads the ByteBuffer'd packets and prints out
+ * information about each packet it understands according to the networking protocol.
  *
  * @param pkt A pointer to a ByteBuffer containing the packet data
  */
@@ -116,8 +120,6 @@ void serverParser(ByteBuffer* pkt) {
          int32_t usize = 0, psize = 0;
          uint8_t *username;
          uint8_t *password;
-
-         // Parse the packet based off a known structure
 
          version = pkt->getInt();
 
@@ -142,8 +144,6 @@ void serverParser(ByteBuffer* pkt) {
          uint8_t *name;
          uint8_t *msg;
 
-         // Parse the packet based off a known structure
-
          usize = pkt->getInt();
          name = new uint8_t[usize];
          pkt->getBytes(name, usize);
@@ -166,17 +166,132 @@ void serverParser(ByteBuffer* pkt) {
    std::print("\n");
 }
 
+/**
+ * Verify Login Packet
+ * Re-parses a login packet from the start and confirms the encoded fields match the expected values.
+ *
+ * @return true if all fields match and the entire packet was consumed
+ */
+bool verifyLoginPacket(ByteBuffer* pkt, int32_t expVersion, const string& expUsername, const string& expPassword) {
+   pkt->setReadPos(0);
+
+   if (pkt->getShort() != Opcode(LOGIN))
+      return false;
+
+   int32_t version = pkt->getInt();
+   if (version != expVersion)
+      return false;
+
+   int32_t usize = pkt->getInt();
+   auto uBuf = make_unique<uint8_t[]>(usize);
+   pkt->getBytes(uBuf.get(), usize);
+   if (string((const char*)uBuf.get()) != expUsername)
+      return false;
+
+   int32_t psize = pkt->getInt();
+   auto pBuf = make_unique<uint8_t[]>(psize);
+   pkt->getBytes(pBuf.get(), psize);
+   if (string((const char*)pBuf.get()) != expPassword)
+      return false;
+
+   return pkt->bytesRemaining() == 0;
+}
+
+/**
+ * Verify Chat Message Packet
+ * Re-parses a chat message packet from the start and confirms the encoded fields match the expected values.
+ *
+ * @return true if all fields match and the entire packet was consumed
+ */
+bool verifyChatMsgPacket(ByteBuffer* pkt, const string& expName, const string& expMsg) {
+   pkt->setReadPos(0);
+
+   if (pkt->getShort() != Opcode(MESSAGE))
+      return false;
+
+   int32_t usize = pkt->getInt();
+   auto uBuf = make_unique<uint8_t[]>(usize);
+   pkt->getBytes(uBuf.get(), usize);
+   if (string((const char*)uBuf.get()) != expName)
+      return false;
+
+   int32_t msize = pkt->getInt();
+   auto mBuf = make_unique<uint8_t[]>(msize);
+   pkt->getBytes(mBuf.get(), msize);
+   if (string((const char*)mBuf.get()) != expMsg)
+      return false;
+
+   return pkt->bytesRemaining() == 0;
+}
+
 int32_t main() {
-   // Create two packets that conform to the network protocol
-   ByteBuffer *loginPkt = createLoginPacket(1234, "fubar", "testpwd");
-   ByteBuffer *msg = createChatMsgPacket("fubar", "message yay!");
+   int failures = 0;
+   auto check = [&failures](bool cond, string_view msg) {
+      if (!cond) {
+         std::print("  FAIL: {}\n", msg);
+         ++failures;
+      }
+   };
 
-   // Have the server parse both packets
-   serverParser(loginPkt);
-   serverParser(msg);
+   // --- Login packet ---
+   std::print("== Login packet ==\n");
+   {
+      const int32_t version  = 1234;
+      const string  username = "fubar";
+      const string  password = "testpwd";
+      // Expected wire size: 2 (opcode) + 4 (version) + 4 (usize) + 6 (username+null)
+      //                   + 4 (psize)  + 8 (password+null) = 28 bytes
+      const uint32_t expectedSize = 28;
 
-   delete loginPkt;
-   delete msg;
+      ByteBuffer* loginPkt = createLoginPacket(version, username, password);
 
-   return 0;
+      check(loginPkt->size() == expectedSize, "login packet: wire size is correct");
+
+      serverParser(loginPkt); // display
+      check(loginPkt->bytesRemaining() == 0, "login packet: all bytes consumed by parser");
+      check(verifyLoginPacket(loginPkt, version, username, password),
+            "login packet: opcode, version, username, password all verified");
+
+      delete loginPkt;
+   }
+
+   // --- Chat message packet ---
+   std::print("== Chat message packet ==\n");
+   {
+      const string name = "fubar";
+      const string msg  = "message yay!";
+      // Expected wire size: 2 (opcode) + 4 (nsize) + 6 (name+null)
+      //                   + 4 (msize)  + 13 (msg+null) = 29 bytes
+      const uint32_t expectedSize = 29;
+
+      ByteBuffer* msgPkt = createChatMsgPacket(name, msg);
+
+      check(msgPkt->size() == expectedSize, "chat packet: wire size is correct");
+
+      serverParser(msgPkt); // display
+      check(msgPkt->bytesRemaining() == 0, "chat packet: all bytes consumed by parser");
+      check(verifyChatMsgPacket(msgPkt, name, msg),
+            "chat packet: opcode, name, msg all verified");
+
+      delete msgPkt;
+   }
+
+   // --- Unknown opcode ---
+   std::print("== Unknown opcode ==\n");
+   {
+      ByteBuffer unknownPkt;
+      unknownPkt.putShort(Opcode(UNKNOWN));
+      unknownPkt.putInt(0xDEADBEEF);
+      // serverParser should hit the default case and not crash
+      serverParser(&unknownPkt);
+      check(unknownPkt.bytesRemaining() == 4, // only the short was consumed
+            "unknown opcode: only opcode bytes consumed by parser");
+   }
+
+   if (failures == 0) {
+      std::print("All tests PASSED\n");
+      return 0;
+   }
+   std::print("{} test(s) FAILED\n", failures);
+   return 1;
 }
